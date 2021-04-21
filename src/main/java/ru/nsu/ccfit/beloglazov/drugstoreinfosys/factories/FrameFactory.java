@@ -1,39 +1,31 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.components.Component;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.drugtypes.DrugType;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.*;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.itemframes.*;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import java.sql.Connection;
 
 public class FrameFactory {
-    public static CreateFrame getCreateFrame(String tableName, TableFrame tf, Connection connection) {
-        CreateFrame cf = null;
+    public static ItemFrame getItemFrame(String tableName, TableItem ti, TableFrame tf, Connection connection) {
         switch (tableName) {
-            case "DRGTYPES":
-                cf = new DrugTypeCreateFrame(tf, connection);
-                break;
             case "CMPNNTS":
-                cf = new ComponentCreateFrame(tf, connection);
-                break;
-            default:
-                break;
-        }
-        return cf;
-    }
-
-    public static EditFrame getEditFrame(String tableName, TableItem ti, TableFrame tf, Connection connection) {
-        EditFrame ef = null;
-        switch (tableName) {
+                return new ComponentFrame(ti, tf, connection);
+            case "DRGSCMPS":
+                return new DrugComponentFrame(ti, tf, connection);
             case "DRGTYPES":
-                ef = new DrugTypeEditFrame((DrugType) ti, tf, connection);
-                break;
-            case "CMPNNTS":
-                ef = new ComponentEditFrame((Component) ti, tf, connection);
-                break;
+                return new DrugTypeFrame(ti, tf, connection);
+            case "DRUGS":
+                return new DrugFrame(ti, tf, connection);
+            case "GIVEN":
+                return new GivenOrderFrame(ti, tf, connection);
+            case "INPRCSS":
+                return new OrderInProcessFrame(ti, tf, connection);
+            case "ORDERS":
+                return new OrderFrame(ti, tf, connection);
+            case "TCHNLGS":
+                return new TechnologyFrame(ti, tf, connection);
             default:
-                break;
+                return null;
         }
-        return ef;
     }
 }

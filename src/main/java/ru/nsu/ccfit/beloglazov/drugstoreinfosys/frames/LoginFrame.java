@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class LoginFrame extends JFrame implements ActionListener {
     private final Container container = getContentPane();
-    private final JLabel titleLabel = new JLabel("DRUGSTORE INFORMATION SYSTEM");
+    private final JLabel titleLabel = new JLabel("DRUGSTORE INFORMATION SYSTEM (ver. S2)");
     private final JLabel tipLabel = new JLabel("CONNECTION TO DATABASE");
     private final JLabel urlLabel = new JLabel("URL:");
     private final JLabel userLabel = new JLabel("USERNAME:");
@@ -24,38 +24,41 @@ public class LoginFrame extends JFrame implements ActionListener {
     private final JButton defaultLocalButton = new JButton("DEFAULT LOCAL CONNECTION");
     private final JButton defaultNSUButton = new JButton("DEFAULT NSU CONNECTION");
     private final JCheckBox showPasswordCheckBox = new JCheckBox("Show Password");
-    private final JCheckBox initCheckBox = new JCheckBox("Initialize");
+    private final JRadioButton initEmptyRButton = new JRadioButton("Create empty tables");
+    private final JRadioButton initAndFillRButton = new JRadioButton("Create tables + fill them with test data");
     private final Properties properties;
-    private MainFrame mf = null;
-    private boolean init = false;
+    private boolean initEmpty = false;
+    private boolean initAndFill = false;
 
     public LoginFrame() {
-        setLayoutManager();
+        container.setLayout(null);
         setLocationAndSize();
         addComponentsToContainer();
         addActionEvent();
         setTitle("DIS :: Login Form");
         setVisible(true);
-        setBounds(10,10,300,420);
+        setBounds(10,10,300,480);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         properties = new Properties();
         try {
-            properties.load(this.getClass().getResourceAsStream("/connection.properties"));
+            properties.load(this.getClass().getResourceAsStream(
+                    "/connection.properties"
+            ));
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Could not load properties! Default connections are not available!");
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Could not load properties! Default connections are not available!",
+                    "Error!", JOptionPane.ERROR_MESSAGE
+            );
             container.remove(defaultLocalButton);
             container.remove(defaultNSUButton);
         }
     }
 
-    private void setLayoutManager() {
-        container.setLayout(null);
-    }
-
     private void setLocationAndSize() {
-        titleLabel.setBounds(10, 10, 250, 30);
+        titleLabel.setBounds(10, 10, 260, 30);
         tipLabel.setBounds(10, 50, 250, 30);
         urlLabel.setBounds(10, 90, 100, 30);
         userLabel.setBounds(10,130,100,30);
@@ -63,12 +66,13 @@ public class LoginFrame extends JFrame implements ActionListener {
         urlTextField.setBounds(50, 90, 220, 30);
         userTextField.setBounds(90,130,180,30);
         passwordField.setBounds(90,170,180,30);
-        showPasswordCheckBox.setBounds(10,210,120,30);
-        initCheckBox.setBounds(145, 210, 150, 30);
-        loginButton.setBounds(10,250,125,30);
-        resetButton.setBounds(145,250,125,30);
-        defaultLocalButton.setBounds(10, 290, 260, 30);
-        defaultNSUButton.setBounds(10, 330, 260, 30);
+        showPasswordCheckBox.setBounds(10,210,260,30);
+        initEmptyRButton.setBounds(10, 240, 260, 30);
+        initAndFillRButton.setBounds(10, 270, 260, 30);
+        loginButton.setBounds(10,310,125,30);
+        resetButton.setBounds(145,310,125,30);
+        defaultLocalButton.setBounds(10, 350, 260, 30);
+        defaultNSUButton.setBounds(10, 390, 260, 30);
     }
 
     private void addComponentsToContainer() {
@@ -81,7 +85,8 @@ public class LoginFrame extends JFrame implements ActionListener {
         container.add(userTextField);
         container.add(passwordField);
         container.add(showPasswordCheckBox);
-        container.add(initCheckBox);
+        container.add(initEmptyRButton);
+        container.add(initAndFillRButton);
         container.add(loginButton);
         container.add(resetButton);
         container.add(defaultLocalButton);
@@ -92,7 +97,8 @@ public class LoginFrame extends JFrame implements ActionListener {
         loginButton.addActionListener(this);
         resetButton.addActionListener(this);
         showPasswordCheckBox.addActionListener(this);
-        initCheckBox.addActionListener(this);
+        initEmptyRButton.addActionListener(this);
+        initAndFillRButton.addActionListener(this);
         defaultLocalButton.addActionListener(this);
         defaultNSUButton.addActionListener(this);
     }
@@ -122,8 +128,18 @@ public class LoginFrame extends JFrame implements ActionListener {
             } else {
                 passwordField.setEchoChar('*');
             }
-        } else if (e.getSource() == initCheckBox) {
-            init = initCheckBox.isSelected();
+        } else if (e.getSource() == initEmptyRButton) {
+            initEmpty = initEmptyRButton.isSelected();
+            if (initEmpty) {
+                initAndFill = false;
+                initAndFillRButton.setSelected(false);
+            }
+        } else if (e.getSource() == initAndFillRButton) {
+            initAndFill = initAndFillRButton.isSelected();
+            if (initAndFill) {
+                initEmpty = false;
+                initEmptyRButton.setSelected(false);
+            }
         }
     }
 
@@ -134,47 +150,73 @@ public class LoginFrame extends JFrame implements ActionListener {
             connection.setAutoCommit(false);
         } catch (SQLException sqlException) {
             sqlException.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Could not connect!");
+            JOptionPane.showMessageDialog(
+                    this, "Could not connect!",
+                    "Error!", JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
-        JOptionPane.showMessageDialog(this, "Connected successfully");
+        JOptionPane.showMessageDialog(
+                this, "Connected successfully"
+        );
+
+        if (initEmpty && initAndFill) {
+            JOptionPane.showMessageDialog(
+                    this, "Select only one init-option!",
+                    "Error!", JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
+
+        if (initEmpty) {
+            try {
+                executeSQL("/sql/create.sql", connection);
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(
+                        this, "Could not initialize tables!",
+                        "Error!", JOptionPane.ERROR_MESSAGE
+                );
+            }
+        } else if (initAndFill) {
+            try {
+                executeSQL("/sql/create.sql", connection);
+                executeSQL("/sql/insert.sql", connection);
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Could not initialize tables and/or fill them with test data!",
+                        "Error!", JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+
+        MainFrame mf = new MainFrame(this, connection);
         setVisible(false);
-
-        if (init) {
-            initialize(connection);
-        }
-
-        if (mf == null) {
-            mf = new MainFrame(this, connection);
-        } else {
-            mf.setVisible(true);
-        }
     }
 
-    private void initialize(Connection connection) {
-        try (InputStream is = this.getClass().getResourceAsStream("/sql/create.sql")) {
-            String script = new BufferedReader(new InputStreamReader(is))
-                    .lines()
-                    .collect(Collectors.joining(System.lineSeparator()));
-            Arrays.stream(script.split("\\r?\\n\\r?\\n"))
-                    .filter(q -> !q.isEmpty() && !q.startsWith("--"))
-                    .map(q -> q.replace("\r\n", " ").replace("\t", " "))
-                    .forEach(q -> {
-                        try (Statement statement = connection.createStatement()) {
-                            statement.execute(q);
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                            JOptionPane.showMessageDialog(this, "Could not initialize!");
-                        }
-                    });
-            try {
-                connection.commit();
-            } catch (SQLException e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Could not initialize!");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void executeSQL(String resourceName, Connection connection) throws IOException, SQLException {
+        InputStream is = this.getClass().getResourceAsStream(resourceName);
+        String script = new BufferedReader(new InputStreamReader(is))
+                .lines()
+                .collect(Collectors.joining(System.lineSeparator()));
+        Arrays.stream(script.split("\\r?\\n\\r?\\n"))
+                .filter(q -> !q.isEmpty() && !q.startsWith("--"))
+                .map(q -> q.replace("\r\n", " ")
+                        .replace("\t", " "))
+                .forEach(q -> {
+                    try (Statement statement = connection.createStatement()) {
+                        statement.execute(q);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(
+                                this, "Could not execute query!",
+                                "Error!", JOptionPane.ERROR_MESSAGE
+                        );
+                    }
+                });
+        connection.commit();
+        is.close();
     }
 }

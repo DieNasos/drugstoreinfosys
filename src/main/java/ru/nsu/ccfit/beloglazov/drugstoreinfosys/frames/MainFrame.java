@@ -3,65 +3,53 @@ package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.sql.*;
+import java.sql.Connection;
 
 public class MainFrame extends JFrame implements ActionListener {
     private final Container container = getContentPane();
-    private final String[] tablesArray = new String[] {
-            "Drug types",
-            "Technologies",
-            "Components",
-            "Drugs",
-            "Waiting customers",
-            "Orders in production",
-            "Given orders"
-    };
-    private final JList<String> tablesJList = new JList<>(tablesArray);
     private final JLabel titleLabel = new JLabel("DRUGSTORE INFORMATION SYSTEM");
-    private final JLabel tipLabel = new JLabel("DATABASE TABLES");
-    private final JButton openButton = new JButton("Open");
+    private final JLabel tipLabel = new JLabel("CHOOSE OPERATION");
+    private final JButton seeTablesButton = new JButton("See tables");
+    private final JButton executeQueryButton = new JButton("Execute query");
     private final JButton backButton = new JButton("Back");
     private final Connection connection;
     private final LoginFrame lf;
-    private final TableFrame[] tfs;
+    private MainTablesFrame mtf = null;
+    private MainQueriesFrame mqf = null;
 
     public MainFrame(LoginFrame lf, Connection connection) {
         this.lf = lf;
         this.connection = connection;
-        tfs = new TableFrame[tablesArray.length];
-        setLayoutManager();
+        container.setLayout(null);
         setLocationAndSize();
         addComponentsToContainer();
         addActionEvent();
-        setTitle("DIS :: Main Form");
+        setTitle("DIS :: Main Frame");
         setVisible(true);
-        setBounds(10,10,300,420);
+        setBounds(10,10,300,260);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
-    }
-
-    private void setLayoutManager() {
-        container.setLayout(null);
     }
 
     private void setLocationAndSize() {
         titleLabel.setBounds(10, 10, 260, 30);
         tipLabel.setBounds(10, 50, 260, 30);
-        tablesJList.setBounds(10, 90, 260, 180);
-        openButton.setBounds(10, 290, 260, 30);
-        backButton.setBounds(10, 330, 260, 30);
+        seeTablesButton.setBounds(10, 100, 260, 30);
+        executeQueryButton.setBounds(10, 140, 260, 30);
+        backButton.setBounds(10, 180, 260, 30);
     }
 
     private void addActionEvent() {
-        openButton.addActionListener(this);
+        seeTablesButton.addActionListener(this);
+        executeQueryButton.addActionListener(this);
         backButton.addActionListener(this);
     }
 
     private void addComponentsToContainer() {
         container.add(titleLabel);
         container.add(tipLabel);
-        container.add(tablesJList);
-        container.add(openButton);
+        container.add(seeTablesButton);
+        container.add(executeQueryButton);
         container.add(backButton);
     }
 
@@ -70,43 +58,17 @@ public class MainFrame extends JFrame implements ActionListener {
         if (e.getSource() == backButton) {
             setVisible(false);
             lf.setVisible(true);
-        } else if (e.getSource() == openButton) {
-            int[] ids = tablesJList.getSelectedIndices();
-            if (ids.length != 1) {
-                return;
+        } else if (e.getSource() == seeTablesButton) {
+            if (mtf == null) {
+                mtf = new MainTablesFrame(this, connection);
             }
-            String tableName = null;
-            switch (tablesArray[ids[0]]) {
-                case "Drug types":
-                    tableName = "DRGTYPES";
-                    break;
-                case "Technologies":
-                    break;
-                case "Components":
-                    tableName = "CMPNNTS";
-                    break;
-                case "Drugs":
-                    break;
-                case "Waiting customers":
-                    break;
-                case "Orders in production":
-                    break;
-                case "Given orders":
-                    break;
-                default:
-                    return;
+            mtf.setVisible(true);
+            setVisible(false);
+        } else if (e.getSource() == executeQueryButton) {
+            if (mqf == null) {
+                mqf = new MainQueriesFrame(this, connection);
             }
-            if (tfs[ids[0]] == null) {
-                try {
-                    tfs[ids[0]] = new TableFrame(this, tableName, connection);
-                } catch (SQLException sqlException) {
-                    sqlException.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Could not open table!");
-                    return;
-                }
-            } else {
-                tfs[ids[0]].setVisible(true);
-            }
+            mqf.setVisible(true);
             setVisible(false);
         }
     }

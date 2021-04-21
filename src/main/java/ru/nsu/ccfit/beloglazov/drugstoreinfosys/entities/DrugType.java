@@ -1,4 +1,4 @@
-package ru.nsu.ccfit.beloglazov.drugstoreinfosys.drugtypes;
+package ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import java.util.*;
@@ -18,7 +18,6 @@ public class DrugType implements TableItem {
     }
 
     public int getID() { return id; }
-
     public String getName() { return name; }
 
     @Override
@@ -31,7 +30,8 @@ public class DrugType implements TableItem {
 
     @Override
     public String toString() {
-        return "DrugType{id = " + id + ", name = '" + name + "'}";
+        return "DrugType{id = " + id
+                + ", name = '" + name + "'}";
     }
 
     @Override
@@ -39,7 +39,8 @@ public class DrugType implements TableItem {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DrugType drugType = (DrugType) o;
-        return id == drugType.id && Objects.equals(name, drugType.name);
+        return id == drugType.id
+                && Objects.equals(name, drugType.name);
     }
 
     @Override

@@ -1,5 +1,6 @@
-package ru.nsu.ccfit.beloglazov.drugstoreinfosys.components;
+package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
 
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.Component;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.DAO;
 import java.sql.*;
 import java.util.*;
@@ -13,12 +14,11 @@ public class ComponentDAO implements DAO<Component> {
 
     @Override
     public void add(Component item) throws SQLException {
-        String name = item.getName();
-        int amount = item.getAmount();
-        String sql = "INSERT INTO CMPNNTS (id, name, amount) VALUES (S_CMPNNTS.nextval, ?, ?)";
+        String sql = "INSERT INTO CMPNNTS (id, name, amount, cost_per_gram) VALUES (S_CMPNNTS.nextval, ?, ?, ?)";
         PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setString(1, name);
-        ps.setInt(2, amount);
+        ps.setString(1, item.getName());
+        ps.setInt(2, item.getAmount());
+        ps.setFloat(3, item.getCostPerGram());
         ps.executeUpdate();
         connection.commit();
         ps.close();
@@ -26,11 +26,12 @@ public class ComponentDAO implements DAO<Component> {
 
     @Override
     public void update(Component item) throws SQLException {
-        String sql = "UPDATE CMPNNTS SET name = ?, amount = ? WHERE id = ?";
+        String sql = "UPDATE CMPNNTS SET name = ?, amount = ?, cost_per_gram = ? WHERE id = ?";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setString(1, item.getName());
         ps.setInt(2, item.getAmount());
-        ps.setInt(3, item.getID());
+        ps.setFloat(3, item.getCostPerGram());
+        ps.setInt(4, item.getID());
         ps.executeUpdate();
         connection.commit();
         ps.close();
@@ -56,7 +57,8 @@ public class ComponentDAO implements DAO<Component> {
             int id = rs.getInt("id");
             String name = rs.getString("name");
             int amount = rs.getInt("amount");
-            Component c = new Component(id, name, amount);
+            float costPerGram = rs.getFloat("cost_per_gram");
+            Component c = new Component(id, name, amount, costPerGram);
             components.add(c);
         }
         ps.close();
@@ -74,5 +76,22 @@ public class ComponentDAO implements DAO<Component> {
         ps.executeUpdate();
         connection.commit();
         ps.close();
+    }
+
+    public Component getByID(int id) throws SQLException {
+        Component component = null;
+        String sql = "SELECT * FROM CMPNNTS WHERE id = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setInt(1, id);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            String name = rs.getString("name");
+            int amount = rs.getInt("amount");
+            float costPerGram = rs.getFloat("cost_per_gram");
+            component = new Component(id, name, amount, costPerGram);
+        }
+        ps.close();
+        rs.close();
+        return component;
     }
 }
