@@ -1,9 +1,8 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
 
-import javafx.util.Pair;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.Component;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.DrugComponent;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.DAO;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import java.sql.*;
 import java.util.*;
 
@@ -50,9 +49,28 @@ public class DrugComponentDAO implements DAO<DrugComponent> {
     }
 
     @Override
-    public List<DrugComponent> getAll() throws SQLException {
-        List<DrugComponent> dcs = new LinkedList<>();
+    public List<TableItem> getAll() throws SQLException {
+        List<TableItem> dcs = new LinkedList<>();
         String sql = "SELECT * FROM DRGSCMPS";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            int id = rs.getInt("id");
+            int drugID = rs.getInt("drug_id");
+            int componentID = rs.getInt("component_id");
+            float gramsOfComponent = rs.getFloat("grams_of_component");
+            DrugComponent dc = new DrugComponent(id, drugID, componentID, gramsOfComponent);
+            dcs.add(dc);
+        }
+        ps.close();
+        rs.close();
+        return dcs;
+    }
+
+    @Override
+    public List<TableItem> getByParameters(String condition) throws SQLException {
+        List<TableItem> dcs = new LinkedList<>();
+        String sql = "SELECT * FROM DRGSCMPS WHERE 1 = 1 AND " + condition;
         PreparedStatement ps = connection.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {

@@ -2,7 +2,11 @@ package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.Drug;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.DAO;
-import java.sql.*;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 public class DrugDAO implements DAO<Drug> {
@@ -52,9 +56,30 @@ public class DrugDAO implements DAO<Drug> {
     }
 
     @Override
-    public List<Drug> getAll() throws SQLException {
-        List<Drug> drugs = new LinkedList<>();
+    public List<TableItem> getAll() throws SQLException {
+        List<TableItem> drugs = new LinkedList<>();
         String sql = "SELECT * FROM DRUGS";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            int id = rs.getInt("id");
+            int typeID = rs.getInt("type_id");
+            int technologyID = rs.getInt("technology_id");
+            float price = rs.getFloat("price");
+            int amount = rs.getInt("amount");
+            int critNorma = rs.getInt("crit_norma");
+            Drug d = new Drug(id, typeID, technologyID, price, amount, critNorma);
+            drugs.add(d);
+        }
+        ps.close();
+        rs.close();
+        return drugs;
+    }
+
+    @Override
+    public List<TableItem> getByParameters(String condition) throws SQLException {
+        List<TableItem> drugs = new LinkedList<>();
+        String sql = "SELECT * FROM DRUGS WHERE 1 = 1 AND " + condition;
         PreparedStatement ps = connection.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {

@@ -2,6 +2,7 @@ package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.Technology;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.DAO;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import java.sql.*;
 import java.util.*;
 
@@ -46,9 +47,27 @@ public class TechnologyDAO implements DAO<Technology> {
     }
 
     @Override
-    public List<Technology> getAll() throws SQLException {
-        List<Technology> technologies = new LinkedList<>();
+    public List<TableItem> getAll() throws SQLException {
+        List<TableItem> technologies = new LinkedList<>();
         String sql = "SELECT * FROM TCHNLGS";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            int id = rs.getInt("id");
+            String drugName = rs.getString("drug_name");
+            String description = rs.getString("description");
+            Technology t = new Technology(id, drugName, description);
+            technologies.add(t);
+        }
+        ps.close();
+        rs.close();
+        return technologies;
+    }
+
+    @Override
+    public List<TableItem> getByParameters(String condition) throws SQLException {
+        List<TableItem> technologies = new LinkedList<>();
+        String sql = "SELECT * FROM TCHNLGS WHERE 1 = 1 AND " + condition;
         PreparedStatement ps = connection.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {

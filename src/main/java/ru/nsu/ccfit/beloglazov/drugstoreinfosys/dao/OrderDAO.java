@@ -2,6 +2,7 @@ package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.Order;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.DAO;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,9 +54,30 @@ public class OrderDAO implements DAO<Order> {
     }
 
     @Override
-    public List<Order> getAll() throws SQLException {
-        List<Order> orders = new LinkedList<>();
+    public List<TableItem> getAll() throws SQLException {
+        List<TableItem> orders = new LinkedList<>();
         String sql = "SELECT * FROM ORDERS";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            int id = rs.getInt("id");
+            String customerName = rs.getString("customer_name");
+            String phoneNumber = rs.getString("phone_number");
+            String address = rs.getString("address");
+            int drugID = rs.getInt("drug_id");
+            int amount = rs.getInt("amount");
+            Order o = new Order(id, customerName, phoneNumber, address, drugID, amount);
+            orders.add(o);
+        }
+        ps.close();
+        rs.close();
+        return orders;
+    }
+
+    @Override
+    public List<TableItem> getByParameters(String condition) throws SQLException {
+        List<TableItem> orders = new LinkedList<>();
+        String sql = "SELECT * FROM ORDERS WHERE 1 = 1 AND " + condition;
         PreparedStatement ps = connection.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {

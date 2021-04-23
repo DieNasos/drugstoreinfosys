@@ -6,8 +6,8 @@ import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import javax.swing.*;
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.List;
 
 public class ComponentFrame extends ItemFrame {
     private final JLabel nameLabel = new JLabel("NAME:");
@@ -17,17 +17,23 @@ public class ComponentFrame extends ItemFrame {
     private final JLabel costLabel = new JLabel("COST/GRAM:");
     private final JTextField costTextField = new JTextField();
 
-    public ComponentFrame(TableItem ti, TableFrame tf, Connection connection) {
-        super(ti, tf, connection);
+    public ComponentFrame(ItemFrameType type, TableItem ti, TableFrame tf, Connection connection) {
+        super(type, ti, tf, connection);
         initComponents();
         setBounds(10, 10, 300, 330);
     }
 
     @Override
     protected void setTextOnTextFields() {
-        nameTextField.setText(((Component)ti).getName());
-        amountTextField.setText(String.valueOf(((Component)ti).getAmount()));
-        costTextField.setText(String.valueOf(((Component)ti).getCostPerGram()));
+        if (type == ItemFrameType.EDIT) {
+            nameTextField.setText(((Component) ti).getName());
+            amountTextField.setText(String.valueOf(((Component) ti).getAmount()));
+            costTextField.setText(String.valueOf(((Component) ti).getCostPerGram()));
+        } else if (type == ItemFrameType.FIND) {
+            nameTextField.setText("= 'component_1'");
+            amountTextField.setText("> 50");
+            costTextField.setText("<= 10.0");
+        }
     }
 
     @Override
@@ -61,8 +67,8 @@ public class ComponentFrame extends ItemFrame {
             dao.add(c);
             tf.setVisible(true);
             dispose();
-        } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
+        } catch (Exception exception) {
+            exception.printStackTrace();
             JOptionPane.showMessageDialog(
                     this, "Could not create item!",
                     "Error!", JOptionPane.ERROR_MESSAGE
@@ -81,10 +87,41 @@ public class ComponentFrame extends ItemFrame {
             dao.update(newC);
             tf.setVisible(true);
             dispose();
-        } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
+        } catch (Exception exception) {
+            exception.printStackTrace();
             JOptionPane.showMessageDialog(
                     this, "Could not edit item!",
+                    "Error!", JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    @Override
+    protected void find() {
+        try {
+            ComponentDAO dao = (ComponentDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            StringBuilder condition = new StringBuilder();
+            String s1 = null, s2 = null, s3 = null;
+            if (!nameTextField.getText().equals("")) {
+                s1 = "name " + nameTextField.getText();
+            }
+            if (!amountTextField.getText().equals("")) {
+                s2 = "amount " + amountTextField.getText();
+            }
+            if (!costTextField.getText().equals("")) {
+                s3 = "cost_per_gram " + costTextField.getText();
+            }
+            appendConditionPart(condition, s1);
+            appendConditionPart(condition, s2);
+            appendConditionPart(condition, s3);
+            List<TableItem> foundItems = dao.getByParameters(condition.toString());
+            tf.setVisible(true);
+            tf.updateItems(foundItems);
+            dispose();
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            JOptionPane.showMessageDialog(
+                    this, "Could not find items!",
                     "Error!", JOptionPane.ERROR_MESSAGE
             );
         }

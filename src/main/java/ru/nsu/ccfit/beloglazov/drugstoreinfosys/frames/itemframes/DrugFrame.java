@@ -1,12 +1,13 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.itemframes;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.DrugDAO;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.*;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.Drug;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import javax.swing.*;
 import java.sql.*;
+import java.util.List;
 
 public class DrugFrame extends ItemFrame {
     private final JLabel typeIDLabel = new JLabel("Type ID:");
@@ -20,19 +21,27 @@ public class DrugFrame extends ItemFrame {
     private final JLabel amountLabel = new JLabel("Amount:");
     private final JTextField amountTextField = new JTextField();
 
-    public DrugFrame(TableItem ti, TableFrame tf, Connection connection) {
-        super(ti, tf, connection);
+    public DrugFrame(ItemFrameType type, TableItem ti, TableFrame tf, Connection connection) {
+        super(type, ti, tf, connection);
         initComponents();
         setBounds(10, 10, 300, 420);
     }
 
     @Override
     protected void setTextOnTextFields() {
-        typeIDTextField.setText(String.valueOf(((Drug)ti).getTypeID()));
-        technologyIDTextField.setText(String.valueOf(((Drug)ti).getTechnologyID()));
-        priceTextField.setText(String.valueOf(((Drug)ti).getPrice()));
-        critNormaTextField.setText(String.valueOf(((Drug)ti).getCritNorma()));
-        amountTextField.setText(String.valueOf(((Drug)ti).getAmount()));
+        if (type == ItemFrameType.EDIT) {
+            typeIDTextField.setText(String.valueOf(((Drug) ti).getTypeID()));
+            technologyIDTextField.setText(String.valueOf(((Drug) ti).getTechnologyID()));
+            priceTextField.setText(String.valueOf(((Drug) ti).getPrice()));
+            amountTextField.setText(String.valueOf(((Drug) ti).getAmount()));
+            critNormaTextField.setText(String.valueOf(((Drug) ti).getCritNorma()));
+        } else if (type == ItemFrameType.FIND) {
+            typeIDTextField.setText("= 2");
+            technologyIDTextField.setText("= 2");
+            priceTextField.setText("<= 200.0");
+            amountTextField.setText("> 3");
+            critNormaTextField.setText("< 10");
+        }
     }
 
     @Override
@@ -76,8 +85,8 @@ public class DrugFrame extends ItemFrame {
             dao.add(d);
             tf.setVisible(true);
             dispose();
-        } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
+        } catch (Exception exception) {
+            exception.printStackTrace();
             JOptionPane.showMessageDialog(
                     this, "Could not create item!",
                     "Error!", JOptionPane.ERROR_MESSAGE
@@ -92,16 +101,55 @@ public class DrugFrame extends ItemFrame {
             int type_id = Integer.parseInt(typeIDTextField.getText());
             int technology_id = Integer.parseInt(technologyIDTextField.getText());
             float price = Float.parseFloat(priceTextField.getText());
-            int crit_norma = Integer.parseInt(critNormaTextField.getText());
             int amount = Integer.parseInt(amountTextField.getText());
+            int crit_norma = Integer.parseInt(critNormaTextField.getText());
             Drug d = new Drug(((Drug)ti).getID(), type_id, technology_id, price, amount, crit_norma);
             dao.update(d);
             tf.setVisible(true);
             dispose();
-        } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
+        } catch (Exception exception) {
+            exception.printStackTrace();
             JOptionPane.showMessageDialog(
                     this, "Could not edit item!",
+                    "Error!", JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    @Override
+    protected void find() {
+        try {
+            DrugDAO dao = (DrugDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            StringBuilder condition = new StringBuilder();
+            String s1 = null, s2 = null, s3 = null, s4 = null, s5 = null;
+            if (!typeIDTextField.getText().equals("")) {
+                s1 = "type_id " + typeIDTextField.getText();
+            }
+            if (!technologyIDTextField.getText().equals("")) {
+                s2 = "technology_id " + technologyIDTextField.getText();
+            }
+            if (!priceTextField.getText().equals("")) {
+                s3 = "price " + priceTextField.getText();
+            }
+            if (!amountTextField.getText().equals("")) {
+                s4 = "amount " + amountTextField.getText();
+            }
+            if (!critNormaTextField.getText().equals("")) {
+                s5 = "crit_norma " + critNormaTextField.getText();
+            }
+            appendConditionPart(condition, s1);
+            appendConditionPart(condition, s2);
+            appendConditionPart(condition, s3);
+            appendConditionPart(condition, s4);
+            appendConditionPart(condition, s5);
+            List<TableItem> foundItems = dao.getByParameters(condition.toString());
+            tf.setVisible(true);
+            tf.updateItems(foundItems);
+            dispose();
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            JOptionPane.showMessageDialog(
+                    this, "Could not find items!",
                     "Error!", JOptionPane.ERROR_MESSAGE
             );
         }

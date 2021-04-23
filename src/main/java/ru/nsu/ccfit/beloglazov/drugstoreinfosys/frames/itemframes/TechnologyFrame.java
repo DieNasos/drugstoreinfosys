@@ -6,8 +6,8 @@ import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import javax.swing.*;
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.List;
 
 public class TechnologyFrame extends ItemFrame {
     private final JLabel drugNameLabel = new JLabel("DRUG NAME:");
@@ -15,16 +15,21 @@ public class TechnologyFrame extends ItemFrame {
     private final JLabel descriptionLabel = new JLabel("DESCRIPTION:");
     private final JTextField descriptionTextField = new JTextField();
 
-    public TechnologyFrame(TableItem ti, TableFrame tf, Connection connection) {
-        super(ti, tf, connection);
+    public TechnologyFrame(ItemFrameType type, TableItem ti, TableFrame tf, Connection connection) {
+        super(type, ti, tf, connection);
         initComponents();
         setBounds(10, 10, 300, 300);
     }
 
     @Override
     protected void setTextOnTextFields() {
-        drugNameTextField.setText(((Technology)ti).getDrugName());
-        descriptionTextField.setText(((Technology)ti).getDescription());
+        if (type == ItemFrameType.EDIT) {
+            drugNameTextField.setText(((Technology) ti).getDrugName());
+            descriptionTextField.setText(((Technology) ti).getDescription());
+        } else if (type == ItemFrameType.FIND) {
+            drugNameTextField.setText("= 'drug_1'");
+            descriptionTextField.setText("= 'description_1'");
+        }
     }
 
     @Override
@@ -53,8 +58,8 @@ public class TechnologyFrame extends ItemFrame {
             dao.add(t);
             tf.setVisible(true);
             dispose();
-        } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
+        } catch (Exception exception) {
+            exception.printStackTrace();
             JOptionPane.showMessageDialog(
                     this, "Could not create item!",
                     "Error!", JOptionPane.ERROR_MESSAGE
@@ -72,10 +77,37 @@ public class TechnologyFrame extends ItemFrame {
             dao.update(t);
             tf.setVisible(true);
             dispose();
-        } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
+        } catch (Exception exception) {
+            exception.printStackTrace();
             JOptionPane.showMessageDialog(
                     this, "Could not edit item!",
+                    "Error!", JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    @Override
+    protected void find() {
+        try {
+            TechnologyDAO dao = (TechnologyDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            StringBuilder condition = new StringBuilder();
+            String s1 = null, s2 = null;
+            if (!drugNameLabel.getText().equals("")) {
+                s1 = "drug_name " + drugNameTextField.getText();
+            }
+            if (!descriptionTextField.getText().equals("")) {
+                s2 = "description " + descriptionTextField.getText();
+            }
+            appendConditionPart(condition, s1);
+            appendConditionPart(condition, s2);
+            List<TableItem> foundItems = dao.getByParameters(condition.toString());
+            tf.setVisible(true);
+            tf.updateItems(foundItems);
+            dispose();
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            JOptionPane.showMessageDialog(
+                    this, "Could not find items!",
                     "Error!", JOptionPane.ERROR_MESSAGE
             );
         }

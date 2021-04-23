@@ -2,8 +2,13 @@ package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.Component;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.DAO;
-import java.sql.*;
-import java.util.*;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ComponentDAO implements DAO<Component> {
     private final Connection connection;
@@ -48,9 +53,28 @@ public class ComponentDAO implements DAO<Component> {
     }
 
     @Override
-    public List<Component> getAll() throws SQLException {
-        List<Component> components = new LinkedList<>();
+    public List<TableItem> getAll() throws SQLException {
+        List<TableItem> components = new LinkedList<>();
         String sql = "SELECT * FROM CMPNNTS";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            int id = rs.getInt("id");
+            String name = rs.getString("name");
+            int amount = rs.getInt("amount");
+            float costPerGram = rs.getFloat("cost_per_gram");
+            Component c = new Component(id, name, amount, costPerGram);
+            components.add(c);
+        }
+        ps.close();
+        rs.close();
+        return components;
+    }
+
+    @Override
+    public List<TableItem> getByParameters(String condition) throws SQLException {
+        List<TableItem> components = new LinkedList<>();
+        String sql = "SELECT * FROM CMPNNTS WHERE 1 = 1 AND " + condition;
         PreparedStatement ps = connection.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {

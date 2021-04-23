@@ -6,24 +6,24 @@ import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import java.sql.Connection;
 
 public class FrameFactory {
-    public static ItemFrame getItemFrame(String tableName, TableItem ti, TableFrame tf, Connection connection) {
+    public static ItemFrame getItemFrame(String tableName, ItemFrameType type, TableItem ti, TableFrame tf, Connection connection) {
         switch (tableName) {
             case "CMPNNTS":
-                return new ComponentFrame(ti, tf, connection);
+                return new ComponentFrame(type, ti, tf, connection);
             case "DRGSCMPS":
-                return new DrugComponentFrame(ti, tf, connection);
+                return new DrugComponentFrame(type, ti, tf, connection);
             case "DRGTYPES":
-                return new DrugTypeFrame(ti, tf, connection);
+                return new DrugTypeFrame(type, ti, tf, connection);
             case "DRUGS":
-                return new DrugFrame(ti, tf, connection);
+                return new DrugFrame(type, ti, tf, connection);
             case "GIVEN":
-                return new GivenOrderFrame(ti, tf, connection);
+                return new GivenOrderFrame(type, ti, tf, connection);
             case "INPRCSS":
-                return new OrderInProcessFrame(ti, tf, connection);
+                return new OrderInProcessFrame(type, ti, tf, connection);
             case "ORDERS":
-                return new OrderFrame(ti, tf, connection);
+                return new OrderFrame(type, ti, tf, connection);
             case "TCHNLGS":
-                return new TechnologyFrame(ti, tf, connection);
+                return new TechnologyFrame(type, ti, tf, connection);
             default:
                 return null;
         }

@@ -2,6 +2,7 @@ package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.OrderInProcess;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.DAO;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,9 +49,27 @@ public class OrderInProcessDAO implements DAO<OrderInProcess> {
     }
 
     @Override
-    public List<OrderInProcess> getAll() throws SQLException {
-        List<OrderInProcess> orders = new LinkedList<>();
+    public List<TableItem> getAll() throws SQLException {
+        List<TableItem> orders = new LinkedList<>();
         String sql = "SELECT * FROM INPRCSS";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            int id = rs.getInt("id");
+            int orderID = rs.getInt("order_id");
+            Timestamp readyTime = rs.getTimestamp("ready_time");
+            OrderInProcess o = new OrderInProcess(id, orderID, readyTime);
+            orders.add(o);
+        }
+        ps.close();
+        rs.close();
+        return orders;
+    }
+
+    @Override
+    public List<TableItem> getByParameters(String condition) throws SQLException {
+        List<TableItem> orders = new LinkedList<>();
+        String sql = "SELECT * FROM INPRCSS WHERE 1 = 1 AND " + condition;
         PreparedStatement ps = connection.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {

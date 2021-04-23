@@ -4,31 +4,41 @@ import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.sql.Connection;
 
 public abstract class ItemFrame extends JFrame implements ActionListener {
     protected final Container container = getContentPane();
     protected final JLabel titleLabel = new JLabel("DRUGSTORE INFORMATION SYSTEM");
-    protected final JLabel tipLabel = new JLabel("CREATING/EDITING ITEM");
+    protected final JLabel tipLabel = new JLabel();
     protected final JButton backButton = new JButton("Back");
-    protected final JButton actionButton;
+    protected final JButton actionButton = new JButton();
     protected final TableItem ti;
     protected final TableFrame tf;
     protected final Connection connection;
+    protected final ItemFrameType type;
 
-    public ItemFrame(TableItem ti, TableFrame tf, Connection connection) {
+    public ItemFrame(ItemFrameType type, TableItem ti, TableFrame tf, Connection connection) {
         this.ti = ti;
         this.tf = tf;
         this.connection = connection;
+        this.type = type;
 
-        if (ti == null) {
-            setTitle("DIS :: Create form");
-            actionButton = new JButton("Create");
-        } else {
-            setTitle("DIS :: Edit form");
-            actionButton = new JButton("Edit");
+        switch (type) {
+            case CREATE:
+                setTitle("DIS :: Create form");
+                tipLabel.setText("Creating new item");
+                actionButton.setText("Create");
+                break;
+            case EDIT:
+                setTitle("DIS :: Edit form");
+                tipLabel.setText("Editing item");
+                actionButton.setText("Edit");
+                break;
+            case FIND:
+                setTitle("DIS :: Find form");
+                tipLabel.setText("Finding items by parameters");
+                actionButton.setText("Find");
         }
 
         container.setLayout(null);
@@ -38,7 +48,8 @@ public abstract class ItemFrame extends JFrame implements ActionListener {
     }
 
     protected void initComponents() {
-        if (ti != null) {
+        if (type == ItemFrameType.EDIT
+                || type == ItemFrameType.FIND) {
             setTextOnTextFields();
         }
 
@@ -74,10 +85,25 @@ public abstract class ItemFrame extends JFrame implements ActionListener {
             tf.setVisible(true);
             dispose();
         } else {
-            if (ti == null) {
-                create();
+            switch (type) {
+                case CREATE:
+                    create();
+                    break;
+                case EDIT:
+                    edit();
+                    break;
+                case FIND:
+                    find();
+            }
+        }
+    }
+
+    protected void appendConditionPart(StringBuilder condition, String part) {
+        if (part != null) {
+            if (condition.length() > 0) {
+                condition.append(" AND ").append(part);
             } else {
-                edit();
+                condition.append(part);
             }
         }
     }
@@ -87,4 +113,5 @@ public abstract class ItemFrame extends JFrame implements ActionListener {
     protected abstract void addCustomComponentsToContainer();
     protected abstract void create();
     protected abstract void edit();
+    protected abstract void find();
 }

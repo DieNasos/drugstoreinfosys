@@ -7,20 +7,25 @@ import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import javax.swing.*;
 import java.sql.*;
+import java.util.List;
 
 public class GivenOrderFrame extends ItemFrame {
     private final JLabel orderIDLabel = new JLabel("ORDER ID:");
     private final JTextField orderIDTextField = new JTextField();
 
-    public GivenOrderFrame(TableItem ti, TableFrame tf, Connection connection) {
-        super(ti, tf, connection);
+    public GivenOrderFrame(ItemFrameType type, TableItem ti, TableFrame tf, Connection connection) {
+        super(type, ti, tf, connection);
         initComponents();
         setBounds(10, 10, 300, 260);
     }
 
     @Override
     protected void setTextOnTextFields() {
-        orderIDTextField.setText(String.valueOf(((GivenOrder)ti).getOrderID()));
+        if (type == ItemFrameType.EDIT) {
+            orderIDTextField.setText(String.valueOf(((GivenOrder) ti).getOrderID()));
+        } else if (type == ItemFrameType.FIND) {
+            orderIDTextField.setText("= 1");
+        }
     }
 
     @Override
@@ -44,8 +49,8 @@ public class GivenOrderFrame extends ItemFrame {
             dao.add(o);
             tf.setVisible(true);
             dispose();
-        } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
+        } catch (Exception exception) {
+            exception.printStackTrace();
             JOptionPane.showMessageDialog(
                     this, "Could not create item!",
                     "Error!", JOptionPane.ERROR_MESSAGE
@@ -62,10 +67,33 @@ public class GivenOrderFrame extends ItemFrame {
             dao.update(o);
             tf.setVisible(true);
             dispose();
-        } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
+        } catch (Exception exception) {
+            exception.printStackTrace();
             JOptionPane.showMessageDialog(
                     this, "Could not edit item!",
+                    "Error!", JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    @Override
+    protected void find() {
+        try {
+            GivenOrderDAO dao = (GivenOrderDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            StringBuilder condition = new StringBuilder();
+            String s1 = null;
+            if (!orderIDTextField.getText().equals("")) {
+                s1 = "order_id " + orderIDTextField.getText();
+            }
+            appendConditionPart(condition, s1);
+            List<TableItem> foundItems = dao.getByParameters(condition.toString());
+            tf.setVisible(true);
+            tf.updateItems(foundItems);
+            dispose();
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            JOptionPane.showMessageDialog(
+                    this, "Could not find items!",
                     "Error!", JOptionPane.ERROR_MESSAGE
             );
         }
