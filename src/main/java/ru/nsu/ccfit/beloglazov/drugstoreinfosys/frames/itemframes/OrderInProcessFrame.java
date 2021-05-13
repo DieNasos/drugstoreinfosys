@@ -4,7 +4,7 @@ import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.OrderInProcessDAO;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.OrderInProcess;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.TableItem;
 import javax.swing.*;
 import java.sql.*;
 import java.util.List;
@@ -16,8 +16,8 @@ public class OrderInProcessFrame extends ItemFrame {
     private final JTextField readyTimeTextField = new JTextField();
     private final JLabel timeTip = new JLabel("* - print time in format: yyyy-mm-dd hh:mm:ss");
 
-    public OrderInProcessFrame(ItemFrameType type, TableItem ti, TableFrame tf, Connection connection) {
-        super(type, ti, tf, connection);
+    public OrderInProcessFrame(ItemFrameType type, String tableName, TableItem ti, JFrame parentFrame, Connection connection) {
+        super(type, tableName, ti, parentFrame, connection);
         initComponents();
         setBounds(10, 10, 300, 330);
     }
@@ -54,12 +54,12 @@ public class OrderInProcessFrame extends ItemFrame {
     @Override
     protected void create() {
         try {
-            OrderInProcessDAO dao = (OrderInProcessDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            OrderInProcessDAO dao = (OrderInProcessDAO) DAOFactory.createDAO(tableName, connection);
             int orderID = Integer.parseInt(orderIDTextField.getText());
             Timestamp readyTime = Timestamp.valueOf(readyTimeTextField.getText());
             OrderInProcess o = new OrderInProcess(orderID, readyTime);
             dao.add(o);
-            tf.setVisible(true);
+            parentFrame.setVisible(true);
             dispose();
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -73,12 +73,12 @@ public class OrderInProcessFrame extends ItemFrame {
     @Override
     protected void edit() {
         try {
-            OrderInProcessDAO dao = (OrderInProcessDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            OrderInProcessDAO dao = (OrderInProcessDAO) DAOFactory.createDAO(tableName, connection);
             int orderID = Integer.parseInt(orderIDTextField.getText());
             Timestamp readyTime = Timestamp.valueOf(readyTimeTextField.getText());
             OrderInProcess o = new OrderInProcess(((OrderInProcess)ti).getID(), orderID, readyTime);
             dao.update(o);
-            tf.setVisible(true);
+            parentFrame.setVisible(true);
             dispose();
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -92,7 +92,7 @@ public class OrderInProcessFrame extends ItemFrame {
     @Override
     protected void find() {
         try {
-            OrderInProcessDAO dao = (OrderInProcessDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            OrderInProcessDAO dao = (OrderInProcessDAO) DAOFactory.createDAO(tableName, connection);
             StringBuilder condition = new StringBuilder();
             String s1 = null, s2 = null;
             if (!orderIDTextField.getText().equals("")) {
@@ -116,9 +116,16 @@ public class OrderInProcessFrame extends ItemFrame {
             }
             appendConditionPart(condition, s1);
             appendConditionPart(condition, s2);
-            List<TableItem> foundItems = dao.getByParameters(condition.toString());
-            tf.setVisible(true);
-            tf.updateItems(foundItems);
+            List<TableItem> foundItems;
+            if (condition.length() > 0) {
+                foundItems = dao.getByParameters(condition.toString());
+            } else {
+                foundItems = dao.getAll();
+            }
+            parentFrame.setVisible(true);
+            if (parentFrame instanceof TableFrame) {
+                ((TableFrame) parentFrame).updateItems(foundItems);
+            }
             dispose();
         } catch (Exception exception) {
             exception.printStackTrace();

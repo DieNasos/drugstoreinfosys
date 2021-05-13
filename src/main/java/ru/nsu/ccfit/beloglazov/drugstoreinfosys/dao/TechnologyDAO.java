@@ -1,8 +1,6 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.Technology;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.DAO;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
 import java.sql.*;
 import java.util.*;
 
@@ -82,18 +80,6 @@ public class TechnologyDAO implements DAO<Technology> {
         return technologies;
     }
 
-    @Override
-    public void resetSequence() throws SQLException {
-        String sql1 = "DROP SEQUENCE S_TCHNLGS";
-        PreparedStatement ps = connection.prepareStatement(sql1);
-        ps.executeUpdate();
-        String sql2 = "CREATE SEQUENCE S_TCHNLGS START WITH 1 INCREMENT BY 1 NOMAXVALUE";
-        ps = connection.prepareStatement(sql2);
-        ps.executeUpdate();
-        connection.commit();
-        ps.close();
-    }
-
     public Technology getByDrugName(String drugName) throws SQLException {
         Technology technology = null;
         String sql = "SELECT * FROM TCHNLGS WHERE drug_name = ?";
@@ -105,6 +91,22 @@ public class TechnologyDAO implements DAO<Technology> {
             String tDrugName = rs.getString("drug_name");
             String description = rs.getString("description");
             technology = new Technology(tID, tDrugName, description);
+        }
+        ps.close();
+        rs.close();
+        return technology;
+    }
+
+    public Technology getByID(int id) throws SQLException {
+        Technology technology = null;
+        String sql = "SELECT * FROM TCHNLGS WHERE id = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setInt(1, id);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            String tDrugName = rs.getString("drug_name");
+            String description = rs.getString("description");
+            technology = new Technology(id, tDrugName, description);
         }
         ps.close();
         rs.close();

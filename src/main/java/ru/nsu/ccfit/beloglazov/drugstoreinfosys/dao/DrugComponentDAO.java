@@ -1,8 +1,6 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.DrugComponent;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.DAO;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
 import java.sql.*;
 import java.util.*;
 
@@ -84,18 +82,6 @@ public class DrugComponentDAO implements DAO<DrugComponent> {
         ps.close();
         rs.close();
         return dcs;
-    }
-
-    @Override
-    public void resetSequence() throws SQLException {
-        String sql1 = "DROP SEQUENCE S_DRGSCMPS";
-        PreparedStatement ps = connection.prepareStatement(sql1);
-        ps.executeUpdate();
-        String sql2 = "CREATE SEQUENCE S_DRGSCMPS START WITH 1 INCREMENT BY 1 NOMAXVALUE";
-        ps = connection.prepareStatement(sql2);
-        ps.executeUpdate();
-        connection.commit();
-        ps.close();
     }
 
     public Map<Integer, Float> getComponentsForDrug(int id) throws SQLException {

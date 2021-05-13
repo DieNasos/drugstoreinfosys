@@ -1,10 +1,9 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.itemframes;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.DrugTypeDAO;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.DrugType;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import javax.swing.*;
 import java.sql.*;
 import java.util.List;
@@ -13,8 +12,8 @@ public class DrugTypeFrame extends ItemFrame {
     private final JLabel nameLabel = new JLabel("NAME:");
     private final JTextField nameTextField = new JTextField();
 
-    public DrugTypeFrame(ItemFrameType type, TableItem ti, TableFrame tf, Connection connection) {
-        super(type, ti, tf, connection);
+    public DrugTypeFrame(ItemFrameType type, String tableName, TableItem ti, JFrame parentFrame, Connection connection) {
+        super(type, tableName, ti, parentFrame, connection);
         initComponents();
         setBounds(10, 10, 300, 260);
     }
@@ -43,11 +42,11 @@ public class DrugTypeFrame extends ItemFrame {
     @Override
     protected void create() {
         try {
-            DrugTypeDAO dao = (DrugTypeDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            DrugTypeDAO dao = (DrugTypeDAO) DAOFactory.createDAO(tableName, connection);
             String name = nameTextField.getText();
             DrugType dt = new DrugType(name);
             dao.add(dt);
-            tf.setVisible(true);
+            parentFrame.setVisible(true);
             dispose();
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -61,11 +60,11 @@ public class DrugTypeFrame extends ItemFrame {
     @Override
     protected void edit() {
         try {
-            DrugTypeDAO dao = (DrugTypeDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            DrugTypeDAO dao = (DrugTypeDAO) DAOFactory.createDAO(tableName, connection);
             String name = nameTextField.getText();
             DrugType newDT = new DrugType(((DrugType)ti).getID(), name);
             dao.update(newDT);
-            tf.setVisible(true);
+            parentFrame.setVisible(true);
             dispose();
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -79,16 +78,21 @@ public class DrugTypeFrame extends ItemFrame {
     @Override
     protected void find() {
         try {
-            DrugTypeDAO dao = (DrugTypeDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            DrugTypeDAO dao = (DrugTypeDAO) DAOFactory.createDAO(tableName, connection);
             StringBuilder condition = new StringBuilder();
             String s1 = null;
             if (!nameTextField.getText().equals("")) {
                 s1 = "name " + nameTextField.getText();
             }
             appendConditionPart(condition, s1);
-            List<TableItem> foundItems = dao.getByParameters(condition.toString());
-            tf.setVisible(true);
-            tf.updateItems(foundItems);
+            List<TableItem> foundItems;
+            if (condition.length() > 0) {
+                foundItems = dao.getByParameters(condition.toString());
+            } else {
+                foundItems = dao.getAll();
+            }
+            parentFrame.setVisible(true);
+            ((TableFrame) parentFrame).updateItems(foundItems);
             dispose();
         } catch (Exception exception) {
             exception.printStackTrace();

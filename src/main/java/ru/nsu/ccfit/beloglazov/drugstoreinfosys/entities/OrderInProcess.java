@@ -1,10 +1,9 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import java.sql.*;
 import java.util.*;
 
-public class OrderInProcess implements TableItem {
+public class OrderInProcess extends TableItem {
     private final int id;
     private final int orderID;
     private final Timestamp readyTime;
@@ -27,10 +26,12 @@ public class OrderInProcess implements TableItem {
 
     @Override
     public Map<String, Object> getValues() {
-        Map<String, Object> values = new HashMap<>();
-        values.put("id", id);
-        values.put("order_id", orderID);
-        values.put("ready_time", readyTime);
+        if (values == null) {
+            values = new HashMap<>();
+            values.put("id", id);
+            values.put("order_id", orderID);
+            values.put("ready_time", readyTime);
+        }
         return values;
     }
 

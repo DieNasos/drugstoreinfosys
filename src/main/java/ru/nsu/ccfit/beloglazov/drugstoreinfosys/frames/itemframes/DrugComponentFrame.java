@@ -1,10 +1,9 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.itemframes;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.DrugComponentDAO;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.DrugComponent;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import javax.swing.*;
 import java.sql.*;
 import java.util.List;
@@ -17,8 +16,8 @@ public class DrugComponentFrame extends ItemFrame {
     private final JLabel gramsLabel = new JLabel("GRAMS OF COMP.:");
     private final JTextField gramsTextField = new JTextField();
 
-    public DrugComponentFrame(ItemFrameType type, TableItem ti, TableFrame tf, Connection connection) {
-        super(type, ti, tf, connection);
+    public DrugComponentFrame(ItemFrameType type, String tableName, TableItem ti, JFrame parentFrame, Connection connection) {
+        super(type, tableName, ti, parentFrame, connection);
         initComponents();
         setBounds(10, 10, 300, 330);
     }
@@ -59,13 +58,13 @@ public class DrugComponentFrame extends ItemFrame {
     @Override
     protected void create() {
         try {
-            DrugComponentDAO dao = (DrugComponentDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            DrugComponentDAO dao = (DrugComponentDAO) DAOFactory.createDAO(tableName, connection);
             int drugID = Integer.parseInt(drugIDTextField.getText());
             int componentID = Integer.parseInt(componentIDTextField.getText());
             float gramsOfComponent = Float.parseFloat(gramsTextField.getText());
             DrugComponent dc = new DrugComponent(drugID, componentID, gramsOfComponent);
             dao.add(dc);
-            tf.setVisible(true);
+            parentFrame.setVisible(true);
             dispose();
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -79,13 +78,13 @@ public class DrugComponentFrame extends ItemFrame {
     @Override
     protected void edit() {
         try {
-            DrugComponentDAO dao = (DrugComponentDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            DrugComponentDAO dao = (DrugComponentDAO) DAOFactory.createDAO(tableName, connection);
             int drugID = Integer.parseInt(drugIDTextField.getText());
             int componentID = Integer.parseInt(componentIDTextField.getText());
             float gramsOfComponent = Float.parseFloat(gramsTextField.getText());
             DrugComponent dc = new DrugComponent(((DrugComponent)ti).getID(), drugID, componentID, gramsOfComponent);
             dao.update(dc);
-            tf.setVisible(true);
+            parentFrame.setVisible(true);
             dispose();
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -99,7 +98,7 @@ public class DrugComponentFrame extends ItemFrame {
     @Override
     protected void find() {
         try {
-            DrugComponentDAO dao = (DrugComponentDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            DrugComponentDAO dao = (DrugComponentDAO) DAOFactory.createDAO(tableName, connection);
             StringBuilder condition = new StringBuilder();
             String s1 = null, s2 = null, s3 = null;
             if (!drugIDTextField.getText().equals("")) {
@@ -114,9 +113,16 @@ public class DrugComponentFrame extends ItemFrame {
             appendConditionPart(condition, s1);
             appendConditionPart(condition, s2);
             appendConditionPart(condition, s3);
-            List<TableItem> foundItems = dao.getByParameters(condition.toString());
-            tf.setVisible(true);
-            tf.updateItems(foundItems);
+            List<TableItem> foundItems;
+            if (condition.length() > 0) {
+                foundItems = dao.getByParameters(condition.toString());
+            } else {
+                foundItems = dao.getAll();
+            }
+            parentFrame.setVisible(true);
+            if (parentFrame instanceof TableFrame) {
+                ((TableFrame) parentFrame).updateItems(foundItems);
+            }
             dispose();
         } catch (Exception exception) {
             exception.printStackTrace();

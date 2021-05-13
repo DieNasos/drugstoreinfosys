@@ -2,18 +2,17 @@ package ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities;
 
 import java.util.*;
 
-public class DrugType extends TableItem {
+public class Role extends TableItem {
     private final int id;
     private final String name;
 
-    public DrugType(String name) {
-        this.id = -1;
+    public Role(int id, String name) {
+        this.id = id;
         this.name = name;
     }
 
-    public DrugType(int id, String name) {
-        this.id = id;
-        this.name = name;
+    public Role(String name) {
+        this(-1, name);
     }
 
     public int getID() { return id; }
@@ -31,7 +30,7 @@ public class DrugType extends TableItem {
 
     @Override
     public String toString() {
-        return "DrugType{id = " + id
+        return "Role{id = " + id
                 + ", name = '" + name + "'}";
     }
 
@@ -39,8 +38,9 @@ public class DrugType extends TableItem {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        DrugType drugType = (DrugType) o;
-        return id == drugType.id && Objects.equals(name, drugType.name);
+        Role role = (Role) o;
+        return id == role.id
+                && Objects.equals(name, role.name);
     }
 
     @Override

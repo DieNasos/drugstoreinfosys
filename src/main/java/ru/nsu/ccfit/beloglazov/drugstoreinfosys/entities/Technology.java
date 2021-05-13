@@ -1,9 +1,8 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import java.util.*;
 
-public class Technology implements TableItem {
+public class Technology extends TableItem {
     private final int id;
     private final String drugName;
     private final String description;
@@ -26,10 +25,12 @@ public class Technology implements TableItem {
 
     @Override
     public Map<String, Object> getValues() {
-        Map<String, Object> values = new HashMap<>();
-        values.put("id", id);
-        values.put("drug_name", drugName);
-        values.put("description", description);
+        if (values == null) {
+            values = new HashMap<>();
+            values.put("id", id);
+            values.put("drug_name", drugName);
+            values.put("description", description);
+        }
         return values;
     }
 

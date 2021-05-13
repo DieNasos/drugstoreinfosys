@@ -1,12 +1,7 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.Drug;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.DAO;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
+import java.sql.*;
 import java.util.*;
 
 public class DrugDAO implements DAO<Drug> {
@@ -97,18 +92,6 @@ public class DrugDAO implements DAO<Drug> {
         return drugs;
     }
 
-    @Override
-    public void resetSequence() throws SQLException {
-        String sql1 = "DROP SEQUENCE S_DRUGS";
-        PreparedStatement ps = connection.prepareStatement(sql1);
-        ps.executeUpdate();
-        String sql2 = "CREATE SEQUENCE S_DRUGS START WITH 1 INCREMENT BY 1 NOMAXVALUE";
-        ps = connection.prepareStatement(sql2);
-        ps.executeUpdate();
-        connection.commit();
-        ps.close();
-    }
-
     public Drug getByTechnologyID(int technologyID) throws SQLException {
         Drug drug = null;
         String sql = "SELECT * FROM DRUGS WHERE technology_id = ?";
@@ -122,6 +105,25 @@ public class DrugDAO implements DAO<Drug> {
             int amount = rs.getInt("amount");
             int critNorma = rs.getInt("crit_norma");
             drug = new Drug(dID, typeID, technologyID, price, amount, critNorma);
+        }
+        ps.close();
+        rs.close();
+        return drug;
+    }
+
+    public Drug getByID(int id) throws SQLException {
+        Drug drug = null;
+        String sql = "SELECT * FROM DRUGS WHERE id = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setInt(1, id);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            int typeID = rs.getInt("type_id");
+            int technologyID = rs.getInt("technology_id");
+            float price = rs.getFloat("price");
+            int amount = rs.getInt("amount");
+            int critNorma = rs.getInt("crit_norma");
+            drug = new Drug(id, typeID, technologyID, price, amount, critNorma);
         }
         ps.close();
         rs.close();

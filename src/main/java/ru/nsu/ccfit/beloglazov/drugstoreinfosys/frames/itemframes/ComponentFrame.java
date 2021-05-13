@@ -1,10 +1,9 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.itemframes;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.ComponentDAO;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.Component;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
 import javax.swing.*;
 import java.sql.*;
 import java.util.List;
@@ -17,8 +16,8 @@ public class ComponentFrame extends ItemFrame {
     private final JLabel costLabel = new JLabel("COST/GRAM:");
     private final JTextField costTextField = new JTextField();
 
-    public ComponentFrame(ItemFrameType type, TableItem ti, TableFrame tf, Connection connection) {
-        super(type, ti, tf, connection);
+    public ComponentFrame(ItemFrameType type, String tableName, TableItem ti, JFrame parentFrame, Connection connection) {
+        super(type, tableName, ti, parentFrame, connection);
         initComponents();
         setBounds(10, 10, 300, 330);
     }
@@ -59,13 +58,13 @@ public class ComponentFrame extends ItemFrame {
     @Override
     protected void create() {
         try {
-            ComponentDAO dao = (ComponentDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            ComponentDAO dao = (ComponentDAO) DAOFactory.createDAO(tableName, connection);
             String name = nameTextField.getText();
             int amount = Integer.parseInt(amountTextField.getText());
             float costPerGram = Float.parseFloat(costTextField.getText());
             Component c = new Component(name, amount, costPerGram);
             dao.add(c);
-            tf.setVisible(true);
+            parentFrame.setVisible(true);
             dispose();
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -79,13 +78,13 @@ public class ComponentFrame extends ItemFrame {
     @Override
     protected void edit() {
         try {
-            ComponentDAO dao = (ComponentDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            ComponentDAO dao = (ComponentDAO) DAOFactory.createDAO(tableName, connection);
             String name = nameTextField.getText();
             int amount = Integer.parseInt(amountTextField.getText());
             float costPerGram = Float.parseFloat(costTextField.getText());
             Component newC = new Component(((Component)ti).getID(), name, amount, costPerGram);
             dao.update(newC);
-            tf.setVisible(true);
+            parentFrame.setVisible(true);
             dispose();
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -99,7 +98,7 @@ public class ComponentFrame extends ItemFrame {
     @Override
     protected void find() {
         try {
-            ComponentDAO dao = (ComponentDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            ComponentDAO dao = (ComponentDAO) DAOFactory.createDAO(tableName, connection);
             StringBuilder condition = new StringBuilder();
             String s1 = null, s2 = null, s3 = null;
             if (!nameTextField.getText().equals("")) {
@@ -114,9 +113,14 @@ public class ComponentFrame extends ItemFrame {
             appendConditionPart(condition, s1);
             appendConditionPart(condition, s2);
             appendConditionPart(condition, s3);
-            List<TableItem> foundItems = dao.getByParameters(condition.toString());
-            tf.setVisible(true);
-            tf.updateItems(foundItems);
+            List<TableItem> foundItems;
+            if (condition.length() > 0) {
+                foundItems = dao.getByParameters(condition.toString());
+            } else {
+                foundItems = dao.getAll();
+            }
+            parentFrame.setVisible(true);
+            ((TableFrame) parentFrame).updateItems(foundItems);
             dispose();
         } catch (Exception exception) {
             exception.printStackTrace();

@@ -4,7 +4,7 @@ import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.TechnologyDAO;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.Technology;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.TableItem;
 import javax.swing.*;
 import java.sql.*;
 import java.util.List;
@@ -15,8 +15,8 @@ public class TechnologyFrame extends ItemFrame {
     private final JLabel descriptionLabel = new JLabel("DESCRIPTION:");
     private final JTextField descriptionTextField = new JTextField();
 
-    public TechnologyFrame(ItemFrameType type, TableItem ti, TableFrame tf, Connection connection) {
-        super(type, ti, tf, connection);
+    public TechnologyFrame(ItemFrameType type, String tableName, TableItem ti, JFrame parentFrame, Connection connection) {
+        super(type, tableName, ti, parentFrame, connection);
         initComponents();
         setBounds(10, 10, 300, 300);
     }
@@ -51,12 +51,12 @@ public class TechnologyFrame extends ItemFrame {
     @Override
     protected void create() {
         try {
-            TechnologyDAO dao = (TechnologyDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            TechnologyDAO dao = (TechnologyDAO) DAOFactory.createDAO(tableName, connection);
             String drug_name = drugNameTextField.getText();
             String description = descriptionTextField.getText();
             Technology t = new Technology(drug_name, description);
             dao.add(t);
-            tf.setVisible(true);
+            parentFrame.setVisible(true);
             dispose();
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -70,12 +70,12 @@ public class TechnologyFrame extends ItemFrame {
     @Override
     protected void edit() {
         try {
-            TechnologyDAO dao = (TechnologyDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            TechnologyDAO dao = (TechnologyDAO) DAOFactory.createDAO(tableName, connection);
             String drug_name = drugNameTextField.getText();
             String description = descriptionTextField.getText();
             Technology t = new Technology(((Technology)ti).getID(), drug_name, description);
             dao.update(t);
-            tf.setVisible(true);
+            parentFrame.setVisible(true);
             dispose();
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -89,7 +89,7 @@ public class TechnologyFrame extends ItemFrame {
     @Override
     protected void find() {
         try {
-            TechnologyDAO dao = (TechnologyDAO) DAOFactory.createDAO(tf.getTableName(), connection);
+            TechnologyDAO dao = (TechnologyDAO) DAOFactory.createDAO(tableName, connection);
             StringBuilder condition = new StringBuilder();
             String s1 = null, s2 = null;
             if (!drugNameLabel.getText().equals("")) {
@@ -100,9 +100,16 @@ public class TechnologyFrame extends ItemFrame {
             }
             appendConditionPart(condition, s1);
             appendConditionPart(condition, s2);
-            List<TableItem> foundItems = dao.getByParameters(condition.toString());
-            tf.setVisible(true);
-            tf.updateItems(foundItems);
+            List<TableItem> foundItems;
+            if (condition.length() > 0) {
+                foundItems = dao.getByParameters(condition.toString());
+            } else {
+                foundItems = dao.getAll();
+            }
+            parentFrame.setVisible(true);
+            if (parentFrame instanceof TableFrame) {
+                ((TableFrame) parentFrame).updateItems(foundItems);
+            }
             dispose();
         } catch (Exception exception) {
             exception.printStackTrace();

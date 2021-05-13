@@ -1,8 +1,6 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.Order;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.DAO;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,13 +14,13 @@ public class OrderDAO implements DAO<Order> {
 
     @Override
     public void add(Order item) throws SQLException {
-        String sql = "INSERT INTO ORDERS (id, customer_name, phone_number, address, drug_id, amount) VALUES (S_ORDERS.nextval, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO ORDERS (id, customer_id, drug_id, amount, given) VALUES (S_ORDERS.nextval, ?, ?, ?, ?)";
         PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setString(1, item.getCustomerName());
-        ps.setString(2, item.getPhoneNumber());
-        ps.setString(3, item.getAddress());
-        ps.setInt(4, item.getDrugID());
-        ps.setInt(5, item.getAmount());
+        ps.setInt(1, item.getCustomerID());
+        ps.setInt(2, item.getDrugID());
+        ps.setInt(3, item.getAmount());
+        int given = item.isGiven() ? 1 : 0;
+        ps.setInt(4, given);
         ps.executeUpdate();
         connection.commit();
         ps.close();
@@ -30,14 +28,14 @@ public class OrderDAO implements DAO<Order> {
 
     @Override
     public void update(Order item) throws SQLException {
-        String sql = "UPDATE ORDERS SET customer_name = ?, phone_number = ?, address = ?, drug_id = ?, amount = ? WHERE id = ?";
+        String sql = "UPDATE ORDERS SET customer_id = ?, drug_id = ?, amount = ?, given = ? WHERE id = ?";
         PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setString(1, item.getCustomerName());
-        ps.setString(2, item.getPhoneNumber());
-        ps.setString(3, item.getAddress());
-        ps.setInt(4, item.getDrugID());
-        ps.setInt(5, item.getAmount());
-        ps.setInt(6, item.getID());
+        ps.setInt(1, item.getCustomerID());
+        ps.setInt(2, item.getDrugID());
+        ps.setInt(3, item.getAmount());
+        int given = item.isGiven() ? 1 : 0;
+        ps.setInt(4, given);
+        ps.setInt(5, item.getID());
         ps.executeUpdate();
         connection.commit();
         ps.close();
@@ -61,12 +59,11 @@ public class OrderDAO implements DAO<Order> {
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
             int id = rs.getInt("id");
-            String customerName = rs.getString("customer_name");
-            String phoneNumber = rs.getString("phone_number");
-            String address = rs.getString("address");
+            int customerID = rs.getInt("customer_id");
             int drugID = rs.getInt("drug_id");
             int amount = rs.getInt("amount");
-            Order o = new Order(id, customerName, phoneNumber, address, drugID, amount);
+            boolean given = rs.getInt("given") == 1;
+            Order o = new Order(id, customerID, drugID, amount, given);
             orders.add(o);
         }
         ps.close();
@@ -82,12 +79,11 @@ public class OrderDAO implements DAO<Order> {
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
             int id = rs.getInt("id");
-            String customerName = rs.getString("customer_name");
-            String phoneNumber = rs.getString("phone_number");
-            String address = rs.getString("address");
+            int customerID = rs.getInt("customer_id");
             int drugID = rs.getInt("drug_id");
             int amount = rs.getInt("amount");
-            Order o = new Order(id, customerName, phoneNumber, address, drugID, amount);
+            boolean given = rs.getInt("given") == 1;
+            Order o = new Order(id, customerID, drugID, amount, given);
             orders.add(o);
         }
         ps.close();
@@ -95,35 +91,40 @@ public class OrderDAO implements DAO<Order> {
         return orders;
     }
 
-    @Override
-    public void resetSequence() throws SQLException {
-        String sql1 = "DROP SEQUENCE S_ORDERS";
-        PreparedStatement ps = connection.prepareStatement(sql1);
-        ps.executeUpdate();
-        String sql2 = "CREATE SEQUENCE S_ORDERS START WITH 1 INCREMENT BY 1 NOMAXVALUE";
-        ps = connection.prepareStatement(sql2);
-        ps.executeUpdate();
-        connection.commit();
-        ps.close();
-    }
-
-    public Order findByID(int id) throws SQLException {
+    public Order getByID(int id) throws SQLException {
         Order order = null;
         String sql = "SELECT * FROM ORDERS WHERE id = ?";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setInt(1, id);
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
-            int orderID = rs.getInt("id");
-            String customerName = rs.getString("customer_name");
-            String phoneNumber = rs.getString("phone_number");
-            String address = rs.getString("address");
+            int customerID = rs.getInt("customer_id");
             int drugID = rs.getInt("drug_id");
             int amount = rs.getInt("amount");
-            order = new Order(id, customerName, phoneNumber, address, drugID, amount);
+            boolean given = rs.getInt("given") == 1;
+            order = new Order(id, customerID, drugID, amount, given);
         }
         ps.close();
         rs.close();
         return order;
+    }
+
+    public List<TableItem> getByCustomerID(int customerID) throws SQLException {
+        List<TableItem> orders = new LinkedList<>();
+        String sql = "SELECT * FROM ORDERS WHERE customer_id = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setInt(1, customerID);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            int id = rs.getInt("id");
+            int drugID = rs.getInt("drug_id");
+            int amount = rs.getInt("amount");
+            boolean given = rs.getInt("given") == 1;
+            Order o = new Order(id, customerID, drugID, amount, given);
+            orders.add(o);
+        }
+        ps.close();
+        rs.close();
+        return orders;
     }
 }

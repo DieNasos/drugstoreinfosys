@@ -1,7 +1,6 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.itemframes;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.TableItem;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -14,13 +13,15 @@ public abstract class ItemFrame extends JFrame implements ActionListener {
     protected final JButton backButton = new JButton("Back");
     protected final JButton actionButton = new JButton();
     protected final TableItem ti;
-    protected final TableFrame tf;
+    protected final JFrame parentFrame;
     protected final Connection connection;
     protected final ItemFrameType type;
+    protected final String tableName;
 
-    public ItemFrame(ItemFrameType type, TableItem ti, TableFrame tf, Connection connection) {
+    public ItemFrame(ItemFrameType type, String tableName, TableItem ti, JFrame parentFrame, Connection connection) {
         this.ti = ti;
-        this.tf = tf;
+        this.tableName = tableName;
+        this.parentFrame = parentFrame;
         this.connection = connection;
         this.type = type;
 
@@ -82,7 +83,7 @@ public abstract class ItemFrame extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == backButton) {
-            tf.setVisible(true);
+            parentFrame.setVisible(true);
             dispose();
         } else {
             switch (type) {

@@ -12,24 +12,22 @@ public class QueryParameterFrame extends JFrame implements ActionListener {
     private final JButton backButton = new JButton("Back");
     private final JLabel parameterLabel = new JLabel("PARAMETER:");
     private final JTextField parameterTextField = new JTextField();
-    private final MainQueriesFrame mqf;
     private final QueryFrame qf;
     private final String queryName;
 
-    public QueryParameterFrame(MainQueriesFrame mqf, QueryFrame qf, String queryName) {
-        this.mqf = mqf;
-        this.qf = qf;
+    public QueryParameterFrame(QueryFrame qf, String queryName) {
         this.queryName = queryName;
+        this.qf = qf;
         qf.setVisible(false);
         container.setLayout(null);
         setLocationAndSize();
         addComponentsToContainer();
         addActionEvent();
         setTitle("DIS :: Query Parameter");
-        setVisible(true);
         setBounds(10,10,300,260);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
+        setVisible(true);
     }
 
     private void setLocationAndSize() {
@@ -59,7 +57,7 @@ public class QueryParameterFrame extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         setVisible(false);
         if (e.getSource() == backButton) {
-            mqf.setVisible(true);
+            qf.getMainFrame().setVisible(true);
         }
         if (e.getSource() == executeButton) {
             qf.setVisible(true);

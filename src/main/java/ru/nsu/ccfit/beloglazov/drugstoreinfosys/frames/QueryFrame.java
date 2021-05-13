@@ -1,6 +1,7 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.QueryExecutor;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.mainframes.MainFrame;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -13,12 +14,12 @@ public class QueryFrame extends JFrame implements ActionListener {
     private final JList<String> resultsJList = new JList<>();
     private final JScrollPane scrollPane = new JScrollPane(resultsJList);
     private final JButton backButton = new JButton("Back");
-    private final MainQueriesFrame mqf;
+    private final MainFrame mf;
     private final QueryExecutor qe;
 
-    public QueryFrame(MainQueriesFrame mqf, Connection connection) {
-        qe = new QueryExecutor(mqf, this, connection);
-        this.mqf = mqf;
+    public QueryFrame(MainFrame mf, Connection connection) {
+        this.mf = mf;
+        qe = new QueryExecutor(this, connection);
         container.setLayout(null);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -70,7 +71,9 @@ public class QueryFrame extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == backButton) {
             setVisible(false);
-            mqf.setVisible(true);
+            mf.setVisible(true);
         }
     }
+
+    public MainFrame getMainFrame() { return mf; }
 }

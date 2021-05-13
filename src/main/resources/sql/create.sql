@@ -20,26 +20,6 @@ exception
         end if;
 end;
 
--- given orders
-
-begin
-    execute immediate 'drop table given cascade constraints';
-exception
-    when others then
-        if sqlcode != -942 then
-            raise;
-        end if;
-end;
-
-begin
-    execute immediate 'drop sequence s_given';
-exception
-    when others then
-        if sqlcode != -2289 then
-            raise;
-        end if;
-end;
-
 -- all orders
 
 begin
@@ -53,6 +33,66 @@ end;
 
 begin
     execute immediate 'drop sequence s_orders';
+exception
+    when others then
+        if sqlcode != -2289 then
+            raise;
+        end if;
+end;
+
+-- customers
+
+begin
+    execute immediate 'drop table cstmrs cascade constraints';
+exception
+    when others then
+        if sqlcode != -942 then
+            raise;
+        end if;
+end;
+
+begin
+    execute immediate 'drop sequence s_cstmrs';
+exception
+    when others then
+        if sqlcode != -2289 then
+            raise;
+        end if;
+end;
+
+-- users
+
+begin
+    execute immediate 'drop table users cascade constraints';
+exception
+    when others then
+        if sqlcode != -942 then
+            raise;
+        end if;
+end;
+
+begin
+    execute immediate 'drop sequence s_users';
+exception
+    when others then
+        if sqlcode != -2289 then
+            raise;
+        end if;
+end;
+
+-- roles
+
+begin
+    execute immediate 'drop table roles cascade constraints';
+exception
+    when others then
+        if sqlcode != -942 then
+            raise;
+        end if;
+end;
+
+begin
+    execute immediate 'drop sequence s_roles';
 exception
     when others then
         if sqlcode != -2289 then
@@ -160,15 +200,20 @@ exception
         end if;
 end;
 
+--
+--
+--
+
 -- CREATE
 
--- drug types
+-- technologies
 
-create sequence s_drgtypes start with 1 increment by 1 nomaxvalue
+create sequence s_tchnlgs start with 1 increment by 1 nomaxvalue
 
-create table drgtypes (
+create table tchnlgs (
     id int,
-    name varchar2(50) not null,
+    drug_name varchar2(50) not null,
+    description varchar2(50) not null,
     primary key(id)
 )
 
@@ -184,14 +229,13 @@ create table cmpnnts (
     primary key(id)
 )
 
--- components
+-- drug types
 
-create sequence s_tchnlgs start with 1 increment by 1 nomaxvalue
+create sequence s_drgtypes start with 1 increment by 1 nomaxvalue
 
-create table tchnlgs (
+create table drgtypes (
     id int,
-    drug_name varchar2(50) not null,
-    description varchar2(50) not null,
+    name varchar2(50) not null,
     primary key(id)
 )
 
@@ -225,18 +269,54 @@ create table drgscmps (
     foreign key (component_id) references cmpnnts(id)
 )
 
+-- roles
+
+create sequence s_roles start with 1 increment by 1 nomaxvalue
+
+create table roles (
+    id int,
+    name varchar2(50) not null,
+    primary key(id)
+)
+
+-- users
+
+create sequence s_users start with 1 increment by 1 nomaxvalue
+
+create table users (
+    id int,
+    login varchar2(50) not null,
+    role_id int not null,
+    primary key(id),
+    foreign key (role_id) references roles(id)
+)
+
+-- customers
+
+create sequence s_cstmrs start with 1 increment by 1 nomaxvalue
+
+create table cstmrs (
+    id int,
+    user_id int null,
+    name varchar2(50) not null,
+    phone_number varchar2(50) not null,
+    address varchar2(50) not null,
+    primary key(id),
+    foreign key (user_id) references users(id)
+)
+
 -- all orders
 
 create sequence s_orders start with 1 increment by 1 nomaxvalue
 
 create table orders (
     id int,
-    customer_name varchar2(50) not null,
-    phone_number varchar2(20) not null,
-    address varchar2(50) not null,
+    customer_id int not null,
     drug_id int not null,
     amount int not null,
+    given int not null,
     primary key(id),
+    foreign key (customer_id) references cstmrs(id),
     foreign key (drug_id) references drugs(id)
 )
 
@@ -252,13 +332,42 @@ create table inprcss (
     foreign key (order_id) references orders(id)
 )
 
--- given orders
+grant select, insert, update on inprcss to "18205_BELOGLAZOV_WORKER"
 
-create sequence s_given start with 1 increment by 1 nomaxvalue
+grant select, insert, update on orders to "18205_BELOGLAZOV_WORKER"
 
-create table given (
-    id int,
-    order_id int not null,
-    primary key(id),
-    foreign key (order_id) references orders(id)
-)
+grant select, insert, update on cstmrs to "18205_BELOGLAZOV_WORKER"
+
+grant select on users to "18205_BELOGLAZOV_WORKER"
+
+grant select on roles to "18205_BELOGLAZOV_WORKER"
+
+grant select, insert, update on drgscmps to "18205_BELOGLAZOV_WORKER"
+
+grant select, insert, update on drugs to "18205_BELOGLAZOV_WORKER"
+
+grant select, insert, update on drgtypes to "18205_BELOGLAZOV_WORKER"
+
+grant select, insert, update on cmpnnts to "18205_BELOGLAZOV_WORKER"
+
+grant select, insert, update on tchnlgs to "18205_BELOGLAZOV_WORKER"
+
+grant select on inprcss to "18205_BELOGLAZOV_CUSTOMER"
+
+grant select, insert on orders to "18205_BELOGLAZOV_CUSTOMER"
+
+grant select on cstmrs to "18205_BELOGLAZOV_CUSTOMER"
+
+grant select on users to "18205_BELOGLAZOV_CUSTOMER"
+
+grant select on roles to "18205_BELOGLAZOV_CUSTOMER"
+
+grant select on drgscmps to "18205_BELOGLAZOV_CUSTOMER"
+
+grant select on drugs to "18205_BELOGLAZOV_CUSTOMER"
+
+grant select on drgtypes to "18205_BELOGLAZOV_CUSTOMER"
+
+grant select on cmpnnts to "18205_BELOGLAZOV_CUSTOMER"
+
+grant select on tchnlgs to "18205_BELOGLAZOV_CUSTOMER"

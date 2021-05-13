@@ -1,63 +1,52 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
-public class Order implements TableItem {
+public class Order extends TableItem {
     private final int id;
-    private final String customerName;
-    private final String phoneNumber;
-    private final String address;
+    private final int customerID;
     private final int drugID;
     private final int amount;
+    private final boolean given;
 
-    public Order(String customerName, String phoneNumber, String address, int drugID, int amount) {
-        id = -1;
-        this.customerName = customerName;
-        this.phoneNumber = phoneNumber;
-        this.address = address;
+    public Order(int id, int customerID, int drugID, int amount, boolean given) {
+        this.id = id;
+        this.customerID = customerID;
         this.drugID = drugID;
         this.amount = amount;
+        this.given = given;
     }
 
-    public Order(int id, String customerName, String phoneNumber, String address, int drugID, int amount) {
-        this.id = id;
-        this.customerName = customerName;
-        this.phoneNumber = phoneNumber;
-        this.address = address;
-        this.drugID = drugID;
-        this.amount = amount;
+    public Order(int customerID, int drugID, int amount, boolean given) {
+        this(-1, customerID, drugID, amount, given);
     }
 
     public int getID() { return id; }
-    public String getCustomerName() { return customerName; }
-    public String getPhoneNumber() { return phoneNumber; }
-    public String getAddress() { return address; }
+    public int getCustomerID() { return customerID; }
     public int getDrugID() { return drugID; }
     public int getAmount() { return amount; }
+    public boolean isGiven() { return given; }
 
     @Override
     public Map<String, Object> getValues() {
-        Map<String, Object> values = new HashMap<>();
-        values.put("id", id);
-        values.put("customer_name", customerName);
-        values.put("phone_number", phoneNumber);
-        values.put("address", address);
-        values.put("drug_id", drugID);
-        values.put("amount", amount);
+        if (values == null) {
+            values = new HashMap<>();
+            values.put("id", id);
+            values.put("customer_id", customerID);
+            values.put("drug_id", drugID);
+            values.put("amount", amount);
+            values.put("given", given);
+        }
         return values;
     }
 
     @Override
     public String toString() {
         return "Order{id = " + id
-                + ", customerName = '" + customerName
-                + "', phoneNumber = '" + phoneNumber
-                + "', address = '" + address
-                + "', drugID = " + drugID
-                + ", amount = " + amount + "}";
+                + ", customerID = " + customerID
+                + ", drugID = " + drugID
+                + ", amount = " + amount
+                + ", given = " + given + "}";
     }
 
     @Override
@@ -68,13 +57,12 @@ public class Order implements TableItem {
         return id == order.id
                 && drugID == order.drugID
                 && amount == order.amount
-                && Objects.equals(customerName, order.customerName)
-                && Objects.equals(phoneNumber, order.phoneNumber)
-                && Objects.equals(address, order.address);
+                && given == order.given
+                && Objects.equals(customerID, order.customerID);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, customerName, phoneNumber, address, drugID, amount);
+        return Objects.hash(id, customerID, drugID, amount, given);
     }
 }

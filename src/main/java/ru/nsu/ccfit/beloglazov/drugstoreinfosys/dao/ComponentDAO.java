@@ -1,14 +1,8 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.Component;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.DAO;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.List;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
+import java.sql.*;
+import java.util.*;
 
 public class ComponentDAO implements DAO<Component> {
     private final Connection connection;
@@ -88,18 +82,6 @@ public class ComponentDAO implements DAO<Component> {
         ps.close();
         rs.close();
         return components;
-    }
-
-    @Override
-    public void resetSequence() throws SQLException {
-        String sql1 = "DROP SEQUENCE S_CMPNNTS";
-        PreparedStatement ps = connection.prepareStatement(sql1);
-        ps.executeUpdate();
-        String sql2 = "CREATE SEQUENCE S_CMPNNTS START WITH 1 INCREMENT BY 1 NOMAXVALUE";
-        ps = connection.prepareStatement(sql2);
-        ps.executeUpdate();
-        connection.commit();
-        ps.close();
     }
 
     public Component getByID(int id) throws SQLException {

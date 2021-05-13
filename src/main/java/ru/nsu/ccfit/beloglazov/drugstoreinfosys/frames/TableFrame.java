@@ -1,7 +1,10 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames;
 
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.TableAccessType;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.DAO;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.TableItem;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.itemframes.ItemFrameType;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.*;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.mainframes.MainFrame;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -21,18 +24,19 @@ public class TableFrame extends JFrame implements ActionListener {
     private final JButton editButton = new JButton("Edit");
     private final JButton deleteButton = new JButton("Delete");
     private final JButton findButton = new JButton("Find");
-    private final JButton restartSeqButton = new JButton("Restart indices");
     private final JButton backButton = new JButton("Back");
-    private final MainTablesFrame mf;
+    private final MainFrame mf;
     private final String tableName;
     private final Connection connection;
+    private final TableAccessType accessType;
     private final DAO dao;
     private List itemsList;
 
-    public TableFrame(MainTablesFrame mf, String tableName, Connection connection) throws SQLException {
+    public TableFrame(MainFrame mf, String tableName, Connection connection, TableAccessType accessType) throws SQLException {
         this.mf = mf;
         this.tableName = tableName;
         this.connection = connection;
+        this.accessType = accessType;
         tableNameLabel = new JLabel("TABLE: '" + tableName + "'");
         dao = DAOFactory.createDAO(tableName, connection);
         updateItems(null);
@@ -44,32 +48,22 @@ public class TableFrame extends JFrame implements ActionListener {
         addComponentsToContainer();
         addActionEvent();
         setTitle("DIS :: Table '" + tableName + "'");
-        setVisible(true);
-        setBounds(10,10,710,460);
+        setBounds(10,10,680,460);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
+        setVisible(true);
     }
 
     private void setLocationAndSize() {
         titleLabel.setBounds(10, 10, 260, 30);
         tableNameLabel.setBounds(10, 50, 260, 30);
         tipLabel.setBounds(10, 90, 260, 30);
-        scrollPane.setBounds(10, 130, 670, 230);
-        createButton.setBounds(10, 370, 100, 30);
-        editButton.setBounds(120, 370, 100, 30);
-        deleteButton.setBounds(230, 370, 100, 30);
-        findButton.setBounds(340, 370, 100, 30);
-        restartSeqButton.setBounds(450, 370, 120, 30);
-        backButton.setBounds(580, 370, 100, 30);
-    }
-
-    private void addActionEvent() {
-        createButton.addActionListener(this);
-        editButton.addActionListener(this);
-        deleteButton.addActionListener(this);
-        findButton.addActionListener(this);
-        restartSeqButton.addActionListener(this);
-        backButton.addActionListener(this);
+        scrollPane.setBounds(10, 130, 640, 230);
+        createButton.setBounds(10, 370, 120, 30);
+        editButton.setBounds(140, 370, 120, 30);
+        deleteButton.setBounds(270, 370, 120, 30);
+        findButton.setBounds(400, 370, 120, 30);
+        backButton.setBounds(530, 370, 120, 30);
     }
 
     private void addComponentsToContainer() {
@@ -77,12 +71,21 @@ public class TableFrame extends JFrame implements ActionListener {
         container.add(tableNameLabel);
         container.add(tipLabel);
         container.add(scrollPane);
-        container.add(createButton);
-        container.add(editButton);
-        container.add(deleteButton);
+        if (accessType == TableAccessType.READ_AND_WRITE) {
+            container.add(createButton);
+            container.add(editButton);
+            container.add(deleteButton);
+        }
         container.add(findButton);
-        container.add(restartSeqButton);
         container.add(backButton);
+    }
+
+    private void addActionEvent() {
+        createButton.addActionListener(this);
+        editButton.addActionListener(this);
+        deleteButton.addActionListener(this);
+        findButton.addActionListener(this);
+        backButton.addActionListener(this);
     }
 
     public void updateItems(List<TableItem> items) {
@@ -92,21 +95,25 @@ public class TableFrame extends JFrame implements ActionListener {
             } else {
                 itemsList = dao.getAll();
             }
+            Object[] columnsArray;
             if (!itemsList.isEmpty()) {
-                Object[] columnsArray = ((TableItem)itemsList.get(0)).getValues().keySet().toArray();
-                DefaultTableModel tm = new DefaultTableModel() {
-                    @Override
-                    public boolean isCellEditable(int row, int column) {
-                        return false;
-                    }
-                };
-                tm.setColumnIdentifiers(columnsArray);
-                for (Object item : itemsList) {
-                    Object[] values = ((TableItem)item).getValues().values().toArray(new Object[0]);
-                    tm.addRow(values);
-                }
-                itemsJTable.setModel(tm);
+                columnsArray = ((TableItem)itemsList.get(0)).getValues().keySet().toArray();
+            } else {
+                List<TableItem> allItems = dao.getAll();
+                columnsArray = allItems.get(0).getValues().keySet().toArray();
             }
+            DefaultTableModel tm = new DefaultTableModel() {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+            tm.setColumnIdentifiers(columnsArray);
+            for (Object item : itemsList) {
+                Object[] values = ((TableItem)item).getValues().values().toArray(new Object[0]);
+                tm.addRow(values);
+            }
+            itemsJTable.setModel(tm);
         } catch (SQLException sqlException) {
             sqlException.printStackTrace();
             JOptionPane.showMessageDialog(
@@ -130,14 +137,12 @@ public class TableFrame extends JFrame implements ActionListener {
             delete();
         } else if (e.getSource() == findButton) {
             find();
-        } else if (e.getSource() == restartSeqButton) {
-            restartSeq();
         } else if (e.getSource() == backButton) {
             back();
         }
     }
 
-    private void create() {
+    public void create() {
         setVisible(false);
         JFrame cf = FrameFactory.getItemFrame(tableName, ItemFrameType.CREATE, null, this, connection);
     }
@@ -178,31 +183,9 @@ public class TableFrame extends JFrame implements ActionListener {
         updateItems(null);
     }
 
-    private void restartSeq() {
-        try {
-            dao.resetSequence();
-        } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
-            JOptionPane.showMessageDialog(
-                    this, "Could not restart indices!",
-                    "Error!", JOptionPane.ERROR_MESSAGE
-            );
-        }
-    }
-
     private void back() {
-        setVisible(false);
         mf.setVisible(true);
-    }
-
-    @Override
-    public void setVisible(boolean b) {
-        super.setVisible(b);
-        try {
-            itemsList = dao.getAll();
-            updateItems(null);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        setVisible(false);
+        dispose();
     }
 }

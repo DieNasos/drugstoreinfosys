@@ -1,8 +1,6 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.OrderInProcess;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.DAO;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.interfaces.TableItem;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
@@ -84,18 +82,6 @@ public class OrderInProcessDAO implements DAO<OrderInProcess> {
         return orders;
     }
 
-    @Override
-    public void resetSequence() throws SQLException {
-        String sql1 = "DROP SEQUENCE S_INPRCSS";
-        PreparedStatement ps = connection.prepareStatement(sql1);
-        ps.executeUpdate();
-        String sql2 = "CREATE SEQUENCE S_INPRCSS START WITH 1 INCREMENT BY 1 NOMAXVALUE";
-        ps = connection.prepareStatement(sql2);
-        ps.executeUpdate();
-        connection.commit();
-        ps.close();
-    }
-
     public List<OrderInProcess> getForgottenOrders() throws SQLException {
         List<OrderInProcess> orders = new LinkedList<>();
         String sql = "SELECT * FROM INPRCSS WHERE ready_time < CURRENT_TIMESTAMP";
@@ -111,5 +97,21 @@ public class OrderInProcessDAO implements DAO<OrderInProcess> {
         ps.close();
         rs.close();
         return orders;
+    }
+
+    public OrderInProcess getByOrderID(int orderID) throws SQLException {
+        OrderInProcess oip = null;
+        String sql = "SELECT * FROM INPRCSS WHERE order_id = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setInt(1, orderID);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            int id = rs.getInt("id");
+            Timestamp readyTime = rs.getTimestamp("ready_time");
+            oip = new OrderInProcess(id, orderID, readyTime);
+        }
+        ps.close();
+        rs.close();
+        return oip;
     }
 }
