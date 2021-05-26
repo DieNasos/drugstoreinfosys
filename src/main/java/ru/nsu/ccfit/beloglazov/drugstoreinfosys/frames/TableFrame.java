@@ -1,7 +1,8 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames;
 
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.CustomOperation;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.TableAccessType;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.DAO;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.tablesdao.TableDAO;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.TableItem;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.itemframes.ItemFrameType;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.mainframes.MainFrame;
@@ -10,35 +11,37 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.net.URL;
 import java.sql.*;
+import java.util.LinkedList;
 import java.util.List;
 
 public class TableFrame extends JFrame implements ActionListener {
     private final Container container = getContentPane();
     private final JLabel titleLabel = new JLabel("DRUGSTORE INFORMATION SYSTEM");
-    private final JLabel tableNameLabel;
     private final JLabel tipLabel = new JLabel("(you can resize columns of this table)");
     private final JTable itemsJTable = new JTable();
     private final JScrollPane scrollPane;
     private final JButton createButton = new JButton("Create");
     private final JButton editButton = new JButton("Edit");
     private final JButton deleteButton = new JButton("Delete");
-    private final JButton findButton = new JButton("Find");
-    private final JButton backButton = new JButton("Back");
+    private final JButton customOperationButton = new JButton();
+    private final JButton findButton = new JButton();
+    private final JButton backButton = new JButton();
     private final MainFrame mf;
     private final String tableName;
-    private final Connection connection;
     private final TableAccessType accessType;
-    private final DAO dao;
-    private List itemsList;
+    private final DAOFactory daoFactory;
+    private final TableDAO dao;
+    private List<TableItem> itemsList;
+    private CustomOperation co;
 
-    public TableFrame(MainFrame mf, String tableName, Connection connection, TableAccessType accessType) throws SQLException {
+    public TableFrame(MainFrame mf, String tableName, TableAccessType accessType, DAOFactory daoFactory, TableDAO dao) throws SQLException {
         this.mf = mf;
         this.tableName = tableName;
-        this.connection = connection;
         this.accessType = accessType;
-        tableNameLabel = new JLabel("TABLE: '" + tableName + "'");
-        dao = DAOFactory.createDAO(tableName, connection);
+        this.daoFactory = daoFactory;
+        this.dao = dao;
         updateItems(null);
         scrollPane = new JScrollPane(itemsJTable);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -56,19 +59,34 @@ public class TableFrame extends JFrame implements ActionListener {
 
     private void setLocationAndSize() {
         titleLabel.setBounds(10, 10, 260, 30);
-        tableNameLabel.setBounds(10, 50, 260, 30);
-        tipLabel.setBounds(10, 90, 260, 30);
-        scrollPane.setBounds(10, 130, 640, 230);
+        tipLabel.setBounds(10, 50, 260, 30);
+        scrollPane.setBounds(10, 90, 640, 270);
         createButton.setBounds(10, 370, 120, 30);
         editButton.setBounds(140, 370, 120, 30);
         deleteButton.setBounds(270, 370, 120, 30);
-        findButton.setBounds(400, 370, 120, 30);
-        backButton.setBounds(530, 370, 120, 30);
+        customOperationButton.setBounds(10, 370, 120, 30);
+        findButton.setBounds(540, 370, 50, 30);
+        backButton.setBounds(600, 370, 50, 30);
+        try {
+            URL findResource = getClass().getClassLoader().getResource("images/magnifier.gif");
+            URL backResource = getClass().getClassLoader().getResource("images/back.gif");
+            if (findResource != null && backResource != null) {
+                ImageIcon findIcon = new ImageIcon(findResource);
+                findButton.setIcon(findIcon);
+                ImageIcon backIcon = new ImageIcon(backResource);
+                backButton.setIcon(backIcon);
+            } else {
+                throw new Exception("Error!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            findButton.setText("o-");
+            backButton.setText("<");
+        }
     }
 
     private void addComponentsToContainer() {
         container.add(titleLabel);
-        container.add(tableNameLabel);
         container.add(tipLabel);
         container.add(scrollPane);
         if (accessType == TableAccessType.READ_AND_WRITE) {
@@ -86,6 +104,7 @@ public class TableFrame extends JFrame implements ActionListener {
         deleteButton.addActionListener(this);
         findButton.addActionListener(this);
         backButton.addActionListener(this);
+        customOperationButton.addActionListener(this);
     }
 
     public void updateItems(List<TableItem> items) {
@@ -97,7 +116,7 @@ public class TableFrame extends JFrame implements ActionListener {
             }
             Object[] columnsArray;
             if (!itemsList.isEmpty()) {
-                columnsArray = ((TableItem)itemsList.get(0)).getValues().keySet().toArray();
+                columnsArray = (itemsList.get(0)).getValues().keySet().toArray();
             } else {
                 List<TableItem> allItems = dao.getAll();
                 columnsArray = allItems.get(0).getValues().keySet().toArray();
@@ -123,8 +142,10 @@ public class TableFrame extends JFrame implements ActionListener {
         }
     }
 
-    public String getTableName() {
-        return tableName;
+    public void setCustomOperation(CustomOperation co) {
+        this.co = co;
+        customOperationButton.setText(co.getName());
+        container.add(customOperationButton);
     }
 
     @Override
@@ -139,12 +160,14 @@ public class TableFrame extends JFrame implements ActionListener {
             find();
         } else if (e.getSource() == backButton) {
             back();
+        } else if (e.getSource() == customOperationButton) {
+            executeCustom();
         }
     }
 
     public void create() {
         setVisible(false);
-        JFrame cf = FrameFactory.getItemFrame(tableName, ItemFrameType.CREATE, null, this, connection);
+        JFrame cf = FrameFactory.getItemFrame(tableName, ItemFrameType.CREATE, null, this, daoFactory);
     }
 
     private void edit() {
@@ -152,21 +175,21 @@ public class TableFrame extends JFrame implements ActionListener {
         if (ids.length != 1) {
             return;
         }
-        TableItem ti = (TableItem) itemsList.get(ids[0]);
+        TableItem ti = itemsList.get(ids[0]);
         setVisible(false);
-        JFrame ef = FrameFactory.getItemFrame(tableName, ItemFrameType.EDIT, ti, this, connection);
+        JFrame ef = FrameFactory.getItemFrame(tableName, ItemFrameType.EDIT, ti, this, daoFactory);
     }
 
     private void find() {
         setVisible(false);
-        JFrame ff = FrameFactory.getItemFrame(tableName, ItemFrameType.FIND, null, this, connection);
+        JFrame ff = FrameFactory.getItemFrame(tableName, ItemFrameType.FIND, null, this, daoFactory);
     }
 
     private void delete() {
         int[] ids = itemsJTable.getSelectedRows();
         int i = ids.length - 1;
         while (i >= 0) {
-            TableItem ti = (TableItem) itemsList.get(ids[i]);
+            TableItem ti = itemsList.get(ids[i]);
             Integer id = (Integer) ti.getValues().get("id");
             try {
                 dao.delete(id);
@@ -187,5 +210,15 @@ public class TableFrame extends JFrame implements ActionListener {
         mf.setVisible(true);
         setVisible(false);
         dispose();
+    }
+
+    private void executeCustom() {
+        int[] ids = itemsJTable.getSelectedRows();
+        if (ids.length != 1) {
+            return;
+        }
+        List<Object> args = new LinkedList<>();
+        args.add(itemsList.get(ids[0]));
+        co.execute(args, this);
     }
 }

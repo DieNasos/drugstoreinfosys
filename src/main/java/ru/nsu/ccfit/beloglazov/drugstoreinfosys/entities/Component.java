@@ -5,7 +5,7 @@ import java.util.*;
 public class Component extends TableItem {
     private final int id;
     private final String name;
-    private final int amount;
+    private int amount;
     private final float costPerGram;
 
     public Component(String name, int amount, float costPerGram) {
@@ -26,6 +26,14 @@ public class Component extends TableItem {
     public String getName() { return name; }
     public int getAmount() { return amount; }
     public float getCostPerGram() { return costPerGram; }
+
+    public void decrementAmount(int gramsTaken) {
+        amount -= gramsTaken;
+    }
+
+    public void incrementAmount(int gramsAdded) {
+        amount += gramsAdded;
+    }
 
     @Override
     public Map<String, Object> getValues() {

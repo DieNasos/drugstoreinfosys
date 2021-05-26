@@ -1,11 +1,12 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.QueryExecutor;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.mainframes.MainFrame;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.sql.Connection;
+import java.net.URL;
 
 public class QueryFrame extends JFrame implements ActionListener {
     private final Container container = getContentPane();
@@ -13,13 +14,13 @@ public class QueryFrame extends JFrame implements ActionListener {
     private final JLabel queryNameLabel = new JLabel();
     private final JList<String> resultsJList = new JList<>();
     private final JScrollPane scrollPane = new JScrollPane(resultsJList);
-    private final JButton backButton = new JButton("Back");
+    private final JButton backButton = new JButton();
     private final MainFrame mf;
     private final QueryExecutor qe;
 
-    public QueryFrame(MainFrame mf, Connection connection) {
+    public QueryFrame(MainFrame mf, DAOFactory daoFactory) {
         this.mf = mf;
-        qe = new QueryExecutor(this, connection);
+        qe = new QueryExecutor(this, daoFactory);
         container.setLayout(null);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -37,7 +38,17 @@ public class QueryFrame extends JFrame implements ActionListener {
         titleLabel.setBounds(10, 10, 260, 30);
         queryNameLabel.setBounds(10, 50, 260, 30);
         scrollPane.setBounds(10, 90, 260, 220);
-        backButton.setBounds(10, 330, 260, 30);
+        backButton.setBounds(10, 330, 50, 30);
+        try {
+            URL backResource = getClass().getClassLoader().getResource("images/back.gif");
+            if (backResource != null) {
+                ImageIcon backIcon = new ImageIcon(backResource);
+                backButton.setIcon(backIcon);
+            } else throw new Exception("Error!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            backButton.setText("<");
+        }
     }
 
     private void addActionEvent() {
@@ -51,11 +62,11 @@ public class QueryFrame extends JFrame implements ActionListener {
         container.add(backButton);
     }
 
-    public void executeQuery(String queryName, String parameter) {
+    public void executeQuery(String queryName, String[] parameters) {
         setVisible(true);
         queryNameLabel.setText("QUERY: " + queryName);
         try {
-            String[] results = qe.execute(queryName, parameter);
+            String[] results = qe.execute(queryName, parameters);
             resultsJList.setListData(results);
         } catch (Exception e) {
             resultsJList.setListData(new String[0]);

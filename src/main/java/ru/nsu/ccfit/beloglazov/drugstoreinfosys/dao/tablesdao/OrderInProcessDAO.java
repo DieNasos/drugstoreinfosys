@@ -1,11 +1,11 @@
-package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
+package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.tablesdao;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 
-public class OrderInProcessDAO implements DAO<OrderInProcess> {
+public class OrderInProcessDAO implements TableDAO<OrderInProcess> {
     private final Connection connection;
 
     public OrderInProcessDAO(Connection connection) {

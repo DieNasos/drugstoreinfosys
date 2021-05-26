@@ -7,7 +7,7 @@ public class Order extends TableItem {
     private final int customerID;
     private final int drugID;
     private final int amount;
-    private final boolean given;
+    private boolean given;
 
     public Order(int id, int customerID, int drugID, int amount, boolean given) {
         this.id = id;
@@ -26,6 +26,10 @@ public class Order extends TableItem {
     public int getDrugID() { return drugID; }
     public int getAmount() { return amount; }
     public boolean isGiven() { return given; }
+
+    public void setGiven() {
+        this.given = true;
+    }
 
     @Override
     public Map<String, Object> getValues() {

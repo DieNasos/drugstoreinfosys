@@ -1,34 +1,32 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.mainframes;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.User;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.sql.Connection;
+import java.net.URL;
 
 public abstract class MainFrame extends JFrame implements ActionListener {
     protected final Container container = getContentPane();
     protected final JLabel titleLabel = new JLabel("DRUGSTORE INFORMATION SYSTEM");
     protected final JLabel tipLabel = new JLabel("CHOOSE OPERATION");
     protected final JLabel roleLabel = new JLabel();
-    protected final JButton chooseButton = new JButton("Choose");
-    protected final JButton backButton = new JButton("Back");
-    protected final Connection connection;
+    protected final JButton chooseButton = new JButton();
+    protected final JButton backButton = new JButton();
+    protected final DAOFactory daoFactory;
     protected final LoginFrame lf;
     protected final QueryFrame qf;
-    protected final User user;
     protected JList<String> optionsJList;
     protected JScrollPane scrollPane;
     protected String[] optionsArray;
 
-    public MainFrame(LoginFrame lf, Connection connection, User user) {
+    public MainFrame(LoginFrame lf, DAOFactory daoFactory) {
         this.lf = lf;
-        this.connection = connection;
-        this.user = user;
-        qf = new QueryFrame(this, connection);
+        this.daoFactory = daoFactory;
+        qf = new QueryFrame(this, daoFactory);
         container.setLayout(null);
-        setTitle("DIS :: Main Frame");
+        setTitle("Main Frame");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setVisible(true);
@@ -46,9 +44,25 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         titleLabel.setBounds(10, 10, 260, 30);
         tipLabel.setBounds(10, 50, 260, 30);
         roleLabel.setBounds(10, 90, 260, 30);
-        scrollPane.setBounds(10, 130, 260, 180);
-        chooseButton.setBounds(10, 330, 260, 30);
-        backButton.setBounds(10, 370, 260, 30);
+        scrollPane.setBounds(10, 130, 260, 220);
+        chooseButton.setBounds(10, 370, 50, 30);
+        backButton.setBounds(70, 370, 50, 30);
+        try {
+            URL chooseResource = getClass().getClassLoader().getResource("images/check.gif");
+            URL backResource = getClass().getClassLoader().getResource("images/back.gif");
+            if (chooseResource != null && backResource != null) {
+                ImageIcon chooseIcon = new ImageIcon(chooseResource);
+                chooseButton.setIcon(chooseIcon);
+                ImageIcon backIcon = new ImageIcon(backResource);
+                backButton.setIcon(backIcon);
+            } else {
+                throw new Exception("Error!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            chooseButton.setText("V");
+            backButton.setText("<");
+        }
     }
 
     private void addComponentsToContainer() {

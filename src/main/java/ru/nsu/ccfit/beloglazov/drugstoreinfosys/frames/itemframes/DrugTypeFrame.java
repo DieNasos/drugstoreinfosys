@@ -1,21 +1,19 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.itemframes;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.DrugTypeDAO;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
 import javax.swing.*;
-import java.sql.*;
 import java.util.List;
 
 public class DrugTypeFrame extends ItemFrame {
     private final JLabel nameLabel = new JLabel("NAME:");
     private final JTextField nameTextField = new JTextField();
 
-    public DrugTypeFrame(ItemFrameType type, String tableName, TableItem ti, JFrame parentFrame, Connection connection) {
-        super(type, tableName, ti, parentFrame, connection);
+    public DrugTypeFrame(ItemFrameType type, TableItem ti, JFrame parentFrame, DAOFactory daoFactory) {
+        super(type, ti, parentFrame, daoFactory, daoFactory.dtDAO);
         initComponents();
-        setBounds(10, 10, 300, 260);
+        setBounds(10, 10, 300, 230);
     }
 
     @Override
@@ -29,8 +27,8 @@ public class DrugTypeFrame extends ItemFrame {
 
     @Override
     protected void setLocationAndSizeForCustom() {
-        nameLabel.setBounds(10, 170, 260, 30);
-        nameTextField.setBounds(70, 170, 200, 30);
+        nameLabel.setBounds(10, 130, 260, 30);
+        nameTextField.setBounds(70, 130, 200, 30);
     }
 
     @Override
@@ -42,7 +40,6 @@ public class DrugTypeFrame extends ItemFrame {
     @Override
     protected void create() {
         try {
-            DrugTypeDAO dao = (DrugTypeDAO) DAOFactory.createDAO(tableName, connection);
             String name = nameTextField.getText();
             DrugType dt = new DrugType(name);
             dao.add(dt);
@@ -60,7 +57,6 @@ public class DrugTypeFrame extends ItemFrame {
     @Override
     protected void edit() {
         try {
-            DrugTypeDAO dao = (DrugTypeDAO) DAOFactory.createDAO(tableName, connection);
             String name = nameTextField.getText();
             DrugType newDT = new DrugType(((DrugType)ti).getID(), name);
             dao.update(newDT);
@@ -78,7 +74,6 @@ public class DrugTypeFrame extends ItemFrame {
     @Override
     protected void find() {
         try {
-            DrugTypeDAO dao = (DrugTypeDAO) DAOFactory.createDAO(tableName, connection);
             StringBuilder condition = new StringBuilder();
             String s1 = null;
             if (!nameTextField.getText().equals("")) {

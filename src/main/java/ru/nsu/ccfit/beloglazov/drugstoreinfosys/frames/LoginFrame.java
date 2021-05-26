@@ -1,8 +1,6 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.*;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.exceptions.*;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.Role;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.*;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.mainframes.MainFrame;
 import javax.swing.*;
@@ -11,11 +9,12 @@ import java.awt.event.*;
 import java.io.*;
 import java.sql.*;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class LoginFrame extends JFrame implements ActionListener {
     private final Container container = getContentPane();
-    private final JLabel titleLabel = new JLabel("DRUGSTORE INFORMATION SYSTEM (ver. S3)");
+    private final JLabel titleLabel = new JLabel("DRUGSTORE INFORMATION SYSTEM (ver. S4)");
     private final JLabel tipLabel = new JLabel("CONNECTION TO DATABASE");
     private final JLabel urlLabel = new JLabel("URL:");
     private final JLabel loginLabel = new JLabel("LOGIN:");
@@ -41,7 +40,7 @@ public class LoginFrame extends JFrame implements ActionListener {
         setLocationAndSize();
         addComponentsToContainer();
         addActionEvent();
-        setTitle("DIS :: Login Form");
+        setTitle("Login Form");
         setBounds(10,10,300,520);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
@@ -181,24 +180,27 @@ public class LoginFrame extends JFrame implements ActionListener {
             return;
         }
 
-        User user;
-        Role role;
-        UserDAO uDAO = new UserDAO(connection);
-        RoleDAO rDAO = new RoleDAO(connection);
-
+        DAOFactory daoFactory = new DAOFactory(connection);
+        Role myRole;
         try {
-            user = checkUser(uDAO);
-        } catch (UserNotFoundException userNotFoundException) {
-            userNotFoundException.printStackTrace();
-            JOptionPane.showMessageDialog(
-                    this, "User does not exist in database!",
-                    "Error!", JOptionPane.ERROR_MESSAGE
-            );
-            return;
-        } catch (Exception e) {
+            List<String> myRoles = daoFactory.rDAO.getForUser();
+            if (myRoles.contains("ROLE_DRUGSTORE_ADMIN")) {
+                myRole = Role.ADMIN;
+            } else if (myRoles.contains("ROLE_DRUGSTORE_WORKER")) {
+                myRole = Role.STORE_WORKER;
+            } else if (myRoles.contains("ROLE_DRUGSTORE_CUSTOMER")) {
+                myRole = Role.CUSTOMER;
+            } else {
+                JOptionPane.showMessageDialog(
+                        this, "You are not admin/worker/customer! Please set one of this roles!",
+                        "Error!", JOptionPane.ERROR_MESSAGE
+                );
+                return;
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(
-                    this, "Something bad happened!",
+                    this, "Could not get roles for user!",
                     "Error!", JOptionPane.ERROR_MESSAGE
             );
             return;
@@ -208,65 +210,19 @@ public class LoginFrame extends JFrame implements ActionListener {
                 this, "Connected successfully"
         );
 
-        try {
-            role = rDAO.getByID(user.getRoleID());
-            if (role == null) {
-                throw new SQLException("ROLE NOT FOUND");
-            }
-            if (!role.getName().equals("admin")) {
-                if (initEmpty || initAndFill) {
-                    throw new PermissionDeniedException("USER IS NOT ADMIN");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(
-                    this, "Could not get role of user!",
-                    "Error!", JOptionPane.ERROR_MESSAGE
-            );
-            return;
-        } catch (PermissionDeniedException pde) {
-            pde.printStackTrace();
+        if (myRole != Role.ADMIN && (initEmpty || initAndFill)) {
             JOptionPane.showMessageDialog(
                     this, "Only admin has permission to init!",
                     "Error!", JOptionPane.ERROR_MESSAGE
             );
         }
 
-        if (initEmpty && initAndFill) {
-            JOptionPane.showMessageDialog(
-                    this, "Select only one init-option!",
-                    "Error!", JOptionPane.ERROR_MESSAGE
-            );
-            return;
-        }
-
-        if (initEmpty) {
-            try {
-                executeSQL("/sql/create.sql", connection);
-            } catch (Exception e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(
-                        this, "Could not initialize tables!",
-                        "Error!", JOptionPane.ERROR_MESSAGE
-                );
-            }
-        } else if (initAndFill) {
-            try {
-                executeSQL("/sql/create.sql", connection);
-                executeSQL("/sql/insert.sql", connection);
-            } catch (Exception e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Could not initialize tables and/or fill them with test data!",
-                        "Error!", JOptionPane.ERROR_MESSAGE
-                );
-            }
+        if (myRole == Role.ADMIN) {
+            init(connection);
         }
 
         try {
-            MainFrame mf = FrameFactory.getMainFrame(this, connection, user);
+            MainFrame mf = FrameFactory.getMainFrame(this, daoFactory, myRole, loginTextField.getText());
             setVisible(false);
         } catch (SQLException sqlException) {
             sqlException.printStackTrace();
@@ -301,19 +257,45 @@ public class LoginFrame extends JFrame implements ActionListener {
         is.close();
     }
 
-    private User checkUser(UserDAO uDAO) throws SQLException, UserNotFoundException {
-        User u = uDAO.getByLogin(loginTextField.getText());
-        if (u == null) {
-            throw new UserNotFoundException("USER NOT FOUND");
-        }
-        return u;
-    }
-
     private void setCurrentSchema(Connection connection, String schemaName) throws SQLException {
         String s = "alter session set current_schema = " + schemaName;
         PreparedStatement ps = connection.prepareStatement(s);
         ps.execute();
         connection.commit();
         ps.close();
+    }
+    
+    private void init(Connection connection) {
+        if (initEmpty && initAndFill) {
+            JOptionPane.showMessageDialog(
+                    this, "Select only one init-option!",
+                    "Error!", JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
+
+        if (initEmpty) {
+            try {
+                executeSQL("/sql/create.sql", connection);
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(
+                        this, "Could not initialize tables!",
+                        "Error!", JOptionPane.ERROR_MESSAGE
+                );
+            }
+        } else if (initAndFill) {
+            try {
+                executeSQL("/sql/create.sql", connection);
+                executeSQL("/sql/insert.sql", connection);
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Could not initialize tables and/or fill them with test data!",
+                        "Error!", JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
     }
 }

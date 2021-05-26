@@ -1,11 +1,9 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.itemframes;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.*;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
 import javax.swing.*;
-import java.sql.*;
 import java.util.List;
 
 public class DrugFrame extends ItemFrame {
@@ -20,10 +18,10 @@ public class DrugFrame extends ItemFrame {
     private final JLabel amountLabel = new JLabel("Amount:");
     private final JTextField amountTextField = new JTextField();
 
-    public DrugFrame(ItemFrameType type, String tableName, TableItem ti, JFrame parentFrame, Connection connection) {
-        super(type, tableName, ti, parentFrame, connection);
+    public DrugFrame(ItemFrameType type, TableItem ti, JFrame parentFrame, DAOFactory daoFactory) {
+        super(type, ti, parentFrame, daoFactory, daoFactory.dDAO);
         initComponents();
-        setBounds(10, 10, 300, 420);
+        setBounds(10, 10, 300, 370);
     }
 
     @Override
@@ -45,16 +43,16 @@ public class DrugFrame extends ItemFrame {
 
     @Override
     protected void setLocationAndSizeForCustom() {
-        typeIDLabel.setBounds(10, 170, 260, 30);
-        typeIDTextField.setBounds(70, 170, 200, 30);
-        technologyIDLabel.setBounds(10, 210, 260, 30);
-        technologyIDTextField.setBounds(70, 210, 200, 30);
-        priceLabel.setBounds(10, 250, 260, 30);
-        priceTextField.setBounds(70, 250, 200, 30);
-        critNormaLabel.setBounds(10, 290, 260, 30);
-        critNormaTextField.setBounds(100, 290, 170, 30);
-        amountLabel.setBounds(10, 330, 260, 30);
-        amountTextField.setBounds(70, 330, 200, 30);
+        typeIDLabel.setBounds(10, 130, 260, 30);
+        typeIDTextField.setBounds(70, 130, 200, 30);
+        technologyIDLabel.setBounds(10, 170, 260, 30);
+        technologyIDTextField.setBounds(70, 170, 200, 30);
+        priceLabel.setBounds(10, 210, 260, 30);
+        priceTextField.setBounds(70, 210, 200, 30);
+        critNormaLabel.setBounds(10, 250, 260, 30);
+        critNormaTextField.setBounds(100, 250, 170, 30);
+        amountLabel.setBounds(10, 290, 260, 30);
+        amountTextField.setBounds(70, 290, 200, 30);
     }
 
     @Override
@@ -74,7 +72,6 @@ public class DrugFrame extends ItemFrame {
     @Override
     protected void create() {
         try {
-            DrugDAO dao = (DrugDAO) DAOFactory.createDAO(tableName, connection);
             int type_id = Integer.parseInt(typeIDTextField.getText());
             int technology_id = Integer.parseInt(technologyIDTextField.getText());
             float price = Float.parseFloat(priceTextField.getText());
@@ -96,7 +93,6 @@ public class DrugFrame extends ItemFrame {
     @Override
     protected void edit() {
         try {
-            DrugDAO dao = (DrugDAO) DAOFactory.createDAO(tableName, connection);
             int type_id = Integer.parseInt(typeIDTextField.getText());
             int technology_id = Integer.parseInt(technologyIDTextField.getText());
             float price = Float.parseFloat(priceTextField.getText());
@@ -118,7 +114,6 @@ public class DrugFrame extends ItemFrame {
     @Override
     protected void find() {
         try {
-            DrugDAO dao = (DrugDAO) DAOFactory.createDAO(tableName, connection);
             StringBuilder condition = new StringBuilder();
             String s1 = null, s2 = null, s3 = null, s4 = null, s5 = null;
             if (!typeIDTextField.getText().equals("")) {

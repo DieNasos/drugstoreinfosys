@@ -1,4 +1,4 @@
--- DROP
+-- DROP TABLES
 
 -- orders in process
 
@@ -53,46 +53,6 @@ end;
 
 begin
     execute immediate 'drop sequence s_cstmrs';
-exception
-    when others then
-        if sqlcode != -2289 then
-            raise;
-        end if;
-end;
-
--- users
-
-begin
-    execute immediate 'drop table users cascade constraints';
-exception
-    when others then
-        if sqlcode != -942 then
-            raise;
-        end if;
-end;
-
-begin
-    execute immediate 'drop sequence s_users';
-exception
-    when others then
-        if sqlcode != -2289 then
-            raise;
-        end if;
-end;
-
--- roles
-
-begin
-    execute immediate 'drop table roles cascade constraints';
-exception
-    when others then
-        if sqlcode != -942 then
-            raise;
-        end if;
-end;
-
-begin
-    execute immediate 'drop sequence s_roles';
 exception
     when others then
         if sqlcode != -2289 then
@@ -204,7 +164,7 @@ end;
 --
 --
 
--- CREATE
+-- CREATE TABLES
 
 -- technologies
 
@@ -269,40 +229,17 @@ create table drgscmps (
     foreign key (component_id) references cmpnnts(id)
 )
 
--- roles
-
-create sequence s_roles start with 1 increment by 1 nomaxvalue
-
-create table roles (
-    id int,
-    name varchar2(50) not null,
-    primary key(id)
-)
-
--- users
-
-create sequence s_users start with 1 increment by 1 nomaxvalue
-
-create table users (
-    id int,
-    login varchar2(50) not null,
-    role_id int not null,
-    primary key(id),
-    foreign key (role_id) references roles(id)
-)
-
 -- customers
 
 create sequence s_cstmrs start with 1 increment by 1 nomaxvalue
 
 create table cstmrs (
     id int,
-    user_id int null,
+    login varchar2(50) null,
     name varchar2(50) not null,
     phone_number varchar2(50) not null,
     address varchar2(50) not null,
-    primary key(id),
-    foreign key (user_id) references users(id)
+    primary key(id)
 )
 
 -- all orders
@@ -332,42 +269,42 @@ create table inprcss (
     foreign key (order_id) references orders(id)
 )
 
-grant select, insert, update on inprcss to "18205_BELOGLAZOV_WORKER"
+---
+---
+---
 
-grant select, insert, update on orders to "18205_BELOGLAZOV_WORKER"
+-- GRANT
 
-grant select, insert, update on cstmrs to "18205_BELOGLAZOV_WORKER"
+-- store worker
 
-grant select on users to "18205_BELOGLAZOV_WORKER"
+grant select, insert, update on inprcss to "ROLE_DRUGSTORE_WORKER"
 
-grant select on roles to "18205_BELOGLAZOV_WORKER"
+grant select, insert, update on orders to "ROLE_DRUGSTORE_WORKER"
 
-grant select, insert, update on drgscmps to "18205_BELOGLAZOV_WORKER"
+grant select, insert, update on cstmrs to "ROLE_DRUGSTORE_WORKER"
 
-grant select, insert, update on drugs to "18205_BELOGLAZOV_WORKER"
+grant select, insert, update on drgscmps to "ROLE_DRUGSTORE_WORKER"
 
-grant select, insert, update on drgtypes to "18205_BELOGLAZOV_WORKER"
+grant select, insert, update on drugs to "ROLE_DRUGSTORE_WORKER"
 
-grant select, insert, update on cmpnnts to "18205_BELOGLAZOV_WORKER"
+grant select, insert, update on drgtypes to "ROLE_DRUGSTORE_WORKER"
 
-grant select, insert, update on tchnlgs to "18205_BELOGLAZOV_WORKER"
+grant select, insert, update on cmpnnts to "ROLE_DRUGSTORE_WORKER"
 
-grant select on inprcss to "18205_BELOGLAZOV_CUSTOMER"
+grant select, insert, update on tchnlgs to "ROLE_DRUGSTORE_WORKER"
 
-grant select, insert on orders to "18205_BELOGLAZOV_CUSTOMER"
+grant select on inprcss to "ROLE_DRUGSTORE_CUSTOMER"
 
-grant select on cstmrs to "18205_BELOGLAZOV_CUSTOMER"
+grant select, insert on orders to "ROLE_DRUGSTORE_CUSTOMER"
 
-grant select on users to "18205_BELOGLAZOV_CUSTOMER"
+grant select on cstmrs to "ROLE_DRUGSTORE_CUSTOMER"
 
-grant select on roles to "18205_BELOGLAZOV_CUSTOMER"
+grant select on drgscmps to "ROLE_DRUGSTORE_CUSTOMER"
 
-grant select on drgscmps to "18205_BELOGLAZOV_CUSTOMER"
+grant select on drugs to "ROLE_DRUGSTORE_CUSTOMER"
 
-grant select on drugs to "18205_BELOGLAZOV_CUSTOMER"
+grant select on drgtypes to "ROLE_DRUGSTORE_CUSTOMER"
 
-grant select on drgtypes to "18205_BELOGLAZOV_CUSTOMER"
+grant select on cmpnnts to "ROLE_DRUGSTORE_CUSTOMER"
 
-grant select on cmpnnts to "18205_BELOGLAZOV_CUSTOMER"
-
-grant select on tchnlgs to "18205_BELOGLAZOV_CUSTOMER"
+grant select on tchnlgs to "ROLE_DRUGSTORE_CUSTOMER"

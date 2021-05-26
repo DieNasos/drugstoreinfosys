@@ -1,10 +1,10 @@
-package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
+package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.tablesdao;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
 import java.sql.*;
 import java.util.*;
 
-public class DrugTypeDAO implements DAO<DrugType> {
+public class DrugTypeDAO implements TableDAO<DrugType> {
     private final Connection connection;
 
     public DrugTypeDAO(Connection connection) {

@@ -7,7 +7,7 @@ public class Drug extends TableItem {
     private final int typeID;
     private final int technologyID;
     private final float price;
-    private final int amount;
+    private int amount;
     private final int critNorma;
 
     public Drug(int typeID, int technologyID, float price, int amount, int critNorma) {
@@ -34,6 +34,14 @@ public class Drug extends TableItem {
     public float getPrice() { return price; }
     public int getAmount() { return amount; }
     public int getCritNorma() { return critNorma; }
+
+    public void decrementAmount(int drugsTaken) {
+        amount -= drugsTaken;
+    }
+
+    public void incrementAmount(int drugsAdded) {
+        amount += drugsAdded;
+    }
 
     @Override
     public Map<String, Object> getValues() {

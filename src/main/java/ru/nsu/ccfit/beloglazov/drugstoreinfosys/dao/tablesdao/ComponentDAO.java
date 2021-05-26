@@ -1,10 +1,10 @@
-package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
+package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.tablesdao;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
 import java.sql.*;
 import java.util.*;
 
-public class ComponentDAO implements DAO<Component> {
+public class ComponentDAO implements TableDAO<Component> {
     private final Connection connection;
 
     public ComponentDAO(Connection connection) {
@@ -92,6 +92,23 @@ public class ComponentDAO implements DAO<Component> {
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
             String name = rs.getString("name");
+            int amount = rs.getInt("amount");
+            float costPerGram = rs.getFloat("cost_per_gram");
+            component = new Component(id, name, amount, costPerGram);
+        }
+        ps.close();
+        rs.close();
+        return component;
+    }
+
+    public Component getByName(String name) throws SQLException {
+        Component component = null;
+        String sql = "SELECT * FROM CMPNNTS WHERE name = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, name);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            int id = rs.getInt("id");
             int amount = rs.getInt("amount");
             float costPerGram = rs.getFloat("cost_per_gram");
             component = new Component(id, name, amount, costPerGram);

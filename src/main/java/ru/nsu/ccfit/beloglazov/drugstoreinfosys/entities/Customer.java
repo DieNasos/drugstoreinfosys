@@ -4,25 +4,25 @@ import java.util.*;
 
 public class Customer extends TableItem  {
     private final int id;
-    private final int userID;
+    private final String login;
     private final String name;
     private final String phoneNumber;
     private final String address;
 
-    public Customer(int id, int userID, String name, String phoneNumber, String address) {
+    public Customer(int id, String login, String name, String phoneNumber, String address) {
         this.id = id;
-        this.userID = userID;
+        this.login = login;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.address = address;
     }
 
-    public Customer(int userID, String name, String phoneNumber, String address) {
-        this(-1, userID, name, phoneNumber, address);
+    public Customer(String login, String name, String phoneNumber, String address) {
+        this(-1, login, name, phoneNumber, address);
     }
 
     public int getID() { return id; }
-    public int getUserID() { return userID; }
+    public String getLogin() { return login; }
     public String getName() { return name; }
     public String getPhoneNumber() { return phoneNumber; }
     public String getAddress() { return address; }
@@ -32,7 +32,7 @@ public class Customer extends TableItem  {
         if (values == null) {
             values = new HashMap<>();
             values.put("id", id);
-            values.put("user_id", userID);
+            values.put("login", login);
             values.put("name", name);
             values.put("phone_number", phoneNumber);
             values.put("address", address);
@@ -43,8 +43,8 @@ public class Customer extends TableItem  {
     @Override
     public String toString() {
         return "Customer{id = " + id
-                + ", userID = " + userID
-                + ", name = '" + name
+                + ", login = '" + login
+                + "', name = '" + name
                 + "', phoneNumber = '" + phoneNumber
                 + "', address = '" + address + "}";
     }
@@ -55,7 +55,7 @@ public class Customer extends TableItem  {
         if (o == null || getClass() != o.getClass()) return false;
         Customer customer = (Customer) o;
         return id == customer.id
-                && userID == customer.userID
+                && Objects.equals(login, customer.login)
                 && Objects.equals(name, customer.name)
                 && Objects.equals(phoneNumber, customer.phoneNumber)
                 && Objects.equals(address, customer.address);
@@ -63,6 +63,6 @@ public class Customer extends TableItem  {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, userID, name, phoneNumber, address);
+        return Objects.hash(id, login, name, phoneNumber, address);
     }
 }

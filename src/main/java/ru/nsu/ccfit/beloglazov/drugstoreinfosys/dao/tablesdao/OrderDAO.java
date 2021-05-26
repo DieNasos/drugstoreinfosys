@@ -1,11 +1,11 @@
-package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
+package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.tablesdao;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 
-public class OrderDAO implements DAO<Order> {
+public class OrderDAO implements TableDAO<Order> {
     private final Connection connection;
 
     public OrderDAO(Connection connection) {
@@ -126,5 +126,11 @@ public class OrderDAO implements DAO<Order> {
         ps.close();
         rs.close();
         return orders;
+    }
+
+    public void setGiven(int orderID) throws SQLException {
+        Order order = getByID(orderID);
+        order.setGiven();
+        update(order);
     }
 }

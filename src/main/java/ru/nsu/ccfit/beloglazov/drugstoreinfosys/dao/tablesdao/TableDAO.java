@@ -1,10 +1,10 @@
-package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao;
+package ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.tablesdao;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.TableItem;
 import java.sql.SQLException;
 import java.util.List;
 
-public interface DAO <T extends TableItem> {
+public interface TableDAO<T extends TableItem> {
     void add(T item) throws SQLException;
     void update(T item) throws SQLException;
     void delete(int id) throws SQLException;

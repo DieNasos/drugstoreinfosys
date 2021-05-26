@@ -1,12 +1,10 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.itemframes;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.TechnologyDAO;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.Technology;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.TableItem;
 import javax.swing.*;
-import java.sql.*;
 import java.util.List;
 
 public class TechnologyFrame extends ItemFrame {
@@ -15,10 +13,10 @@ public class TechnologyFrame extends ItemFrame {
     private final JLabel descriptionLabel = new JLabel("DESCRIPTION:");
     private final JTextField descriptionTextField = new JTextField();
 
-    public TechnologyFrame(ItemFrameType type, String tableName, TableItem ti, JFrame parentFrame, Connection connection) {
-        super(type, tableName, ti, parentFrame, connection);
+    public TechnologyFrame(ItemFrameType type, TableItem ti, JFrame parentFrame, DAOFactory daoFactory) {
+        super(type, ti, parentFrame, daoFactory, daoFactory.tDAO);
         initComponents();
-        setBounds(10, 10, 300, 300);
+        setBounds(10, 10, 300, 270);
     }
 
     @Override
@@ -34,10 +32,10 @@ public class TechnologyFrame extends ItemFrame {
 
     @Override
     protected void setLocationAndSizeForCustom() {
-        drugNameLabel.setBounds(10, 170, 260, 30);
-        drugNameTextField.setBounds(100, 170, 170, 30);
-        descriptionLabel.setBounds(10, 210, 260, 30);
-        descriptionTextField.setBounds(100, 210, 170, 30);
+        drugNameLabel.setBounds(10, 130, 260, 30);
+        drugNameTextField.setBounds(100, 130, 170, 30);
+        descriptionLabel.setBounds(10, 170, 260, 30);
+        descriptionTextField.setBounds(100, 170, 170, 30);
     }
 
     @Override
@@ -51,7 +49,6 @@ public class TechnologyFrame extends ItemFrame {
     @Override
     protected void create() {
         try {
-            TechnologyDAO dao = (TechnologyDAO) DAOFactory.createDAO(tableName, connection);
             String drug_name = drugNameTextField.getText();
             String description = descriptionTextField.getText();
             Technology t = new Technology(drug_name, description);
@@ -70,7 +67,6 @@ public class TechnologyFrame extends ItemFrame {
     @Override
     protected void edit() {
         try {
-            TechnologyDAO dao = (TechnologyDAO) DAOFactory.createDAO(tableName, connection);
             String drug_name = drugNameTextField.getText();
             String description = descriptionTextField.getText();
             Technology t = new Technology(((Technology)ti).getID(), drug_name, description);
@@ -89,7 +85,6 @@ public class TechnologyFrame extends ItemFrame {
     @Override
     protected void find() {
         try {
-            TechnologyDAO dao = (TechnologyDAO) DAOFactory.createDAO(tableName, connection);
             StringBuilder condition = new StringBuilder();
             String s1 = null, s2 = null;
             if (!drugNameLabel.getText().equals("")) {

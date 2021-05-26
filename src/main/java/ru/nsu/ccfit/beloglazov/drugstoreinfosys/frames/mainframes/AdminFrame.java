@@ -1,14 +1,14 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.mainframes;
 
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.TableAccessType;
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.User;
+import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.*;
 import javax.swing.*;
 import java.sql.*;
 
 public class AdminFrame extends MainFrame {
-    public AdminFrame(LoginFrame lf, Connection connection, User user) {
-        super(lf, connection, user);
+    public AdminFrame(LoginFrame lf, DAOFactory daoFactory) {
+        super(lf, daoFactory);
         roleLabel.setText("You are ADMIN");
         setBounds(10,10,300,450);
     }
@@ -16,13 +16,14 @@ public class AdminFrame extends MainFrame {
     @Override
     protected void initOptions() {
         optionsArray = new String[] {
-                "Open Components",
-                "Open Drugs components",
-                "Open Drugs",
-                "Open Drug types",
-                "Open All orders",
-                "Open Orders in process",
-                "Open Technologies"
+                "Open COMPONENTS",
+                "Open DRUGS/COMPONENTS",
+                "Open DRUGS",
+                "Open DRUG TYPES",
+                "Open ALL ORDERS",
+                "Open ORDERS IN PROCESS",
+                "Open TECHNOLOGIES",
+                "Open CUSTOMERS"
         };
     }
 
@@ -30,27 +31,37 @@ public class AdminFrame extends MainFrame {
     protected void executeOption(String option) {
         try {
             switch (option) {
-                case "Open Components":
-                    TableFrame tf1 = new TableFrame(this, "CMPNNTS", connection, TableAccessType.READ_AND_WRITE);
+                case "Open COMPONENTS":
+                    TableFrame tf1 = new TableFrame(this, "CMPNNTS",
+                            TableAccessType.READ_AND_WRITE, daoFactory, daoFactory.coDAO);
                     break;
-                case "Open Drugs components":
-                    TableFrame tf2 = new TableFrame(this, "DRGSCMPS", connection, TableAccessType.READ_AND_WRITE);
+                case "Open DRUGS/COMPONENTS":
+                    TableFrame tf2 = new TableFrame(this, "DRGSCMPS",
+                            TableAccessType.READ_AND_WRITE, daoFactory, daoFactory.dcDAO);
                     break;
-                case "Open Drugs":
-                    TableFrame tf3 = new TableFrame(this, "DRUGS", connection, TableAccessType.READ_AND_WRITE);
+                case "Open DRUGS":
+                    TableFrame tf3 = new TableFrame(this, "DRUGS",
+                            TableAccessType.READ_AND_WRITE, daoFactory, daoFactory.dDAO);
                     break;
-                case "Open Drug types":
-                    TableFrame tf4 = new TableFrame(this, "DRGTYPES", connection, TableAccessType.READ_AND_WRITE);
+                case "Open DRUG TYPES":
+                    TableFrame tf4 = new TableFrame(this, "DRGTYPES",
+                            TableAccessType.READ_AND_WRITE, daoFactory, daoFactory.dtDAO);
                     break;
-                case "Open All orders":
-                    TableFrame tf5 = new TableFrame(this, "ORDERS", connection, TableAccessType.READ_AND_WRITE);
+                case "Open ALL ORDERS":
+                    TableFrame tf5 = new TableFrame(this, "ORDERS",
+                            TableAccessType.READ_AND_WRITE, daoFactory, daoFactory.oDAO);
                     break;
-                case "Open Orders in process":
-                    TableFrame tf6 = new TableFrame(this, "INPRCSS", connection, TableAccessType.READ_AND_WRITE);
+                case "Open ORDERS IN PROCESS":
+                    TableFrame tf6 = new TableFrame(this, "INPRCSS",
+                            TableAccessType.READ_AND_WRITE, daoFactory, daoFactory.oipDAO);
                     break;
-                case "Open Technologies":
-                    TableFrame tf7 = new TableFrame(this, "TCHNLGS", connection, TableAccessType.READ_AND_WRITE);
+                case "Open TECHNOLOGIES":
+                    TableFrame tf7 = new TableFrame(this, "TCHNLGS",
+                            TableAccessType.READ_AND_WRITE, daoFactory, daoFactory.tDAO);
                     break;
+                case "Open CUSTOMERS":
+                    TableFrame tf8 = new TableFrame(this, "CUSTOMERS",
+                            TableAccessType.READ_ONLY, daoFactory, daoFactory.cuDAO);
             }
         } catch (SQLException e) {
             e.printStackTrace();

@@ -1,11 +1,9 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.itemframes;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.ComponentDAO;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
 import javax.swing.*;
-import java.sql.*;
 import java.util.List;
 
 public class ComponentFrame extends ItemFrame {
@@ -16,10 +14,10 @@ public class ComponentFrame extends ItemFrame {
     private final JLabel costLabel = new JLabel("COST/GRAM:");
     private final JTextField costTextField = new JTextField();
 
-    public ComponentFrame(ItemFrameType type, String tableName, TableItem ti, JFrame parentFrame, Connection connection) {
-        super(type, tableName, ti, parentFrame, connection);
+    public ComponentFrame(ItemFrameType type, TableItem ti, JFrame parentFrame, DAOFactory daoFactory) {
+        super(type, ti, parentFrame, daoFactory, daoFactory.coDAO);
         initComponents();
-        setBounds(10, 10, 300, 330);
+        setBounds(10, 10, 300, 300);
     }
 
     @Override
@@ -37,12 +35,12 @@ public class ComponentFrame extends ItemFrame {
 
     @Override
     protected void setLocationAndSizeForCustom() {
-        nameLabel.setBounds(10, 170, 260, 30);
-        nameTextField.setBounds(70, 170, 200, 30);
-        amountLabel.setBounds(10, 210, 260, 30);
-        amountTextField.setBounds(70, 210, 200, 30);
-        costLabel.setBounds(10, 250, 260, 30);
-        costTextField.setBounds(90, 250, 180, 30);
+        nameLabel.setBounds(10, 130, 260, 30);
+        nameTextField.setBounds(70, 130, 200, 30);
+        amountLabel.setBounds(10, 170, 260, 30);
+        amountTextField.setBounds(70, 170, 200, 30);
+        costLabel.setBounds(10, 210, 260, 30);
+        costTextField.setBounds(90, 210, 180, 30);
     }
 
     @Override
@@ -58,7 +56,6 @@ public class ComponentFrame extends ItemFrame {
     @Override
     protected void create() {
         try {
-            ComponentDAO dao = (ComponentDAO) DAOFactory.createDAO(tableName, connection);
             String name = nameTextField.getText();
             int amount = Integer.parseInt(amountTextField.getText());
             float costPerGram = Float.parseFloat(costTextField.getText());
@@ -78,7 +75,6 @@ public class ComponentFrame extends ItemFrame {
     @Override
     protected void edit() {
         try {
-            ComponentDAO dao = (ComponentDAO) DAOFactory.createDAO(tableName, connection);
             String name = nameTextField.getText();
             int amount = Integer.parseInt(amountTextField.getText());
             float costPerGram = Float.parseFloat(costTextField.getText());
@@ -98,7 +94,6 @@ public class ComponentFrame extends ItemFrame {
     @Override
     protected void find() {
         try {
-            ComponentDAO dao = (ComponentDAO) DAOFactory.createDAO(tableName, connection);
             StringBuilder condition = new StringBuilder();
             String s1 = null, s2 = null, s3 = null;
             if (!nameTextField.getText().equals("")) {

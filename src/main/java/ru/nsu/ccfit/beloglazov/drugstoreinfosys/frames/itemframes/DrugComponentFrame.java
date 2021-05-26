@@ -1,11 +1,9 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.itemframes;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.DrugComponentDAO;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.*;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
 import javax.swing.*;
-import java.sql.*;
 import java.util.List;
 
 public class DrugComponentFrame extends ItemFrame {
@@ -16,10 +14,10 @@ public class DrugComponentFrame extends ItemFrame {
     private final JLabel gramsLabel = new JLabel("GRAMS OF COMP.:");
     private final JTextField gramsTextField = new JTextField();
 
-    public DrugComponentFrame(ItemFrameType type, String tableName, TableItem ti, JFrame parentFrame, Connection connection) {
-        super(type, tableName, ti, parentFrame, connection);
+    public DrugComponentFrame(ItemFrameType type, TableItem ti, JFrame parentFrame, DAOFactory daoFactory) {
+        super(type, ti, parentFrame, daoFactory, daoFactory.dcDAO);
         initComponents();
-        setBounds(10, 10, 300, 330);
+        setBounds(10, 10, 300, 300);
     }
 
     @Override
@@ -37,12 +35,12 @@ public class DrugComponentFrame extends ItemFrame {
 
     @Override
     protected void setLocationAndSizeForCustom() {
-        drugIDLabel.setBounds(10, 170, 260, 30);
-        drugIDTextField.setBounds(80, 170, 190, 30);
-        componentIDLabel.setBounds(10, 210, 260, 30);
-        componentIDTextField.setBounds(80, 210, 190, 30);
-        gramsLabel.setBounds(10, 250, 260, 30);
-        gramsTextField.setBounds(120, 250, 150, 30);
+        drugIDLabel.setBounds(10, 130, 260, 30);
+        drugIDTextField.setBounds(80, 130, 190, 30);
+        componentIDLabel.setBounds(10, 170, 260, 30);
+        componentIDTextField.setBounds(80, 170, 190, 30);
+        gramsLabel.setBounds(10, 210, 260, 30);
+        gramsTextField.setBounds(120, 210, 150, 30);
     }
 
     @Override
@@ -58,7 +56,6 @@ public class DrugComponentFrame extends ItemFrame {
     @Override
     protected void create() {
         try {
-            DrugComponentDAO dao = (DrugComponentDAO) DAOFactory.createDAO(tableName, connection);
             int drugID = Integer.parseInt(drugIDTextField.getText());
             int componentID = Integer.parseInt(componentIDTextField.getText());
             float gramsOfComponent = Float.parseFloat(gramsTextField.getText());
@@ -78,7 +75,6 @@ public class DrugComponentFrame extends ItemFrame {
     @Override
     protected void edit() {
         try {
-            DrugComponentDAO dao = (DrugComponentDAO) DAOFactory.createDAO(tableName, connection);
             int drugID = Integer.parseInt(drugIDTextField.getText());
             int componentID = Integer.parseInt(componentIDTextField.getText());
             float gramsOfComponent = Float.parseFloat(gramsTextField.getText());
@@ -98,7 +94,6 @@ public class DrugComponentFrame extends ItemFrame {
     @Override
     protected void find() {
         try {
-            DrugComponentDAO dao = (DrugComponentDAO) DAOFactory.createDAO(tableName, connection);
             StringBuilder condition = new StringBuilder();
             String s1 = null, s2 = null, s3 = null;
             if (!drugIDTextField.getText().equals("")) {

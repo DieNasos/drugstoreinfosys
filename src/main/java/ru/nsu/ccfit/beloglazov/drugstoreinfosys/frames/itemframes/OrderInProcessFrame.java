@@ -1,6 +1,5 @@
 package ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.itemframes;
 
-import ru.nsu.ccfit.beloglazov.drugstoreinfosys.dao.OrderInProcessDAO;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.entities.OrderInProcess;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.factories.DAOFactory;
 import ru.nsu.ccfit.beloglazov.drugstoreinfosys.frames.TableFrame;
@@ -16,10 +15,10 @@ public class OrderInProcessFrame extends ItemFrame {
     private final JTextField readyTimeTextField = new JTextField();
     private final JLabel timeTip = new JLabel("* - print time in format: yyyy-mm-dd hh:mm:ss");
 
-    public OrderInProcessFrame(ItemFrameType type, String tableName, TableItem ti, JFrame parentFrame, Connection connection) {
-        super(type, tableName, ti, parentFrame, connection);
+    public OrderInProcessFrame(ItemFrameType type, TableItem ti, JFrame parentFrame, DAOFactory daoFactory) {
+        super(type, ti, parentFrame, daoFactory, daoFactory.oipDAO);
         initComponents();
-        setBounds(10, 10, 300, 330);
+        setBounds(10, 10, 300, 300);
     }
 
     @Override
@@ -35,11 +34,11 @@ public class OrderInProcessFrame extends ItemFrame {
 
     @Override
     protected void setLocationAndSizeForCustom() {
-        orderIDLabel.setBounds(10, 170, 260, 30);
-        orderIDTextField.setBounds(80, 170, 190, 30);
-        readyTimeLabel.setBounds(10, 210, 260, 30);
-        readyTimeTextField.setBounds(100, 210, 170, 30);
-        timeTip.setBounds(10, 250, 260, 30);
+        orderIDLabel.setBounds(10, 130, 260, 30);
+        orderIDTextField.setBounds(80, 130, 190, 30);
+        readyTimeLabel.setBounds(10, 170, 260, 30);
+        readyTimeTextField.setBounds(100, 170, 170, 30);
+        timeTip.setBounds(10, 210, 260, 30);
     }
 
     @Override
@@ -54,7 +53,6 @@ public class OrderInProcessFrame extends ItemFrame {
     @Override
     protected void create() {
         try {
-            OrderInProcessDAO dao = (OrderInProcessDAO) DAOFactory.createDAO(tableName, connection);
             int orderID = Integer.parseInt(orderIDTextField.getText());
             Timestamp readyTime = Timestamp.valueOf(readyTimeTextField.getText());
             OrderInProcess o = new OrderInProcess(orderID, readyTime);
@@ -73,7 +71,6 @@ public class OrderInProcessFrame extends ItemFrame {
     @Override
     protected void edit() {
         try {
-            OrderInProcessDAO dao = (OrderInProcessDAO) DAOFactory.createDAO(tableName, connection);
             int orderID = Integer.parseInt(orderIDTextField.getText());
             Timestamp readyTime = Timestamp.valueOf(readyTimeTextField.getText());
             OrderInProcess o = new OrderInProcess(((OrderInProcess)ti).getID(), orderID, readyTime);
@@ -92,7 +89,6 @@ public class OrderInProcessFrame extends ItemFrame {
     @Override
     protected void find() {
         try {
-            OrderInProcessDAO dao = (OrderInProcessDAO) DAOFactory.createDAO(tableName, connection);
             StringBuilder condition = new StringBuilder();
             String s1 = null, s2 = null;
             if (!orderIDTextField.getText().equals("")) {
